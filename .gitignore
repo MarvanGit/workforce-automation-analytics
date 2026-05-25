@@ -12,6 +12,8 @@ __pycache__/
 .pytest_cache/
 .ruff_cache/
 .mypy_cache/
+.uv-cache/
+.uv-python/
 .coverage
 htmlcov/
 .venv/
@@ -33,4 +35,3 @@ apps/frontend/dist/
 .vscode/
 .DS_Store
 Thumbs.db
-
