@@ -1,0 +1,2 @@
+"""Workforce analytics backend package."""
+
