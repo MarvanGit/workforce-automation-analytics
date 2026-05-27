@@ -1,0 +1,137 @@
+.app-shell {
+  min-height: 100vh;
+  display: grid;
+  grid-template-areas:
+    "topbar topbar"
+    "sidebar content";
+  grid-template-columns: 244px minmax(0, 1fr);
+  grid-template-rows: 64px minmax(0, 1fr);
+}
+
+.topbar {
+  grid-area: topbar;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+  padding: 0 28px;
+  border-bottom: 1px solid #d9dee7;
+  background: #ffffff;
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+}
+
+.brand-mark {
+  width: 34px;
+  height: 34px;
+  display: grid;
+  place-items: center;
+  border-radius: 8px;
+  background: #17424a;
+  color: #ffffff;
+  font-size: 0.85rem;
+  font-weight: 800;
+}
+
+.brand-title {
+  margin: 0;
+  font-size: 1rem;
+  font-weight: 800;
+}
+
+.brand-subtitle {
+  margin: 2px 0 0;
+  color: #697586;
+  font-size: 0.8125rem;
+}
+
+.topbar-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  color: #4b5565;
+  font-size: 0.875rem;
+  white-space: nowrap;
+}
+
+.status-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 999px;
+  background: #16875d;
+}
+
+.sidebar {
+  grid-area: sidebar;
+  padding: 20px 14px;
+  border-right: 1px solid #d9dee7;
+  background: #ffffff;
+}
+
+.nav-group {
+  display: grid;
+  gap: 6px;
+}
+
+.nav-link {
+  display: block;
+  padding: 10px 12px;
+  border-radius: 8px;
+  color: #4b5565;
+  font-size: 0.925rem;
+  font-weight: 700;
+}
+
+.nav-link.active {
+  background: #e5f2ee;
+  color: #17424a;
+}
+
+.content {
+  grid-area: content;
+  min-width: 0;
+  padding: 28px;
+}
+
+@media (max-width: 820px) {
+  .app-shell {
+    grid-template-areas:
+      "topbar"
+      "sidebar"
+      "content";
+    grid-template-columns: 1fr;
+    grid-template-rows: auto auto minmax(0, 1fr);
+  }
+
+  .topbar {
+    align-items: flex-start;
+    flex-direction: column;
+    padding: 16px;
+  }
+
+  .sidebar {
+    border-right: 0;
+    border-bottom: 1px solid #d9dee7;
+    padding: 12px 16px;
+  }
+
+  .nav-group {
+    display: flex;
+    gap: 8px;
+    overflow-x: auto;
+  }
+
+  .nav-link {
+    white-space: nowrap;
+  }
+
+  .content {
+    padding: 18px;
+  }
+}
+

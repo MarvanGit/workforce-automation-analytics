@@ -48,6 +48,12 @@ Backend health check:
 http://localhost:8000/api/v1/health
 ```
 
+Frontend:
+
+```text
+http://localhost:4200
+```
+
 Worker ping check:
 
 ```powershell

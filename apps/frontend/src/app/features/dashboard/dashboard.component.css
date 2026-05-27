@@ -1,0 +1,157 @@
+.dashboard {
+  display: grid;
+  gap: 24px;
+}
+
+.page-header {
+  display: flex;
+  justify-content: space-between;
+  gap: 20px;
+  align-items: flex-start;
+}
+
+.page-header h2 {
+  margin: 0;
+  font-size: 1.55rem;
+  line-height: 1.2;
+}
+
+.page-header p {
+  margin: 8px 0 0;
+  color: #697586;
+  max-width: 680px;
+}
+
+.metric-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 16px;
+}
+
+.metric-card,
+.panel {
+  border: 1px solid #d9dee7;
+  border-radius: 8px;
+  background: #ffffff;
+}
+
+.metric-card {
+  padding: 18px;
+}
+
+.metric-label {
+  margin: 0;
+  color: #697586;
+  font-size: 0.875rem;
+}
+
+.metric-value {
+  margin: 10px 0 0;
+  color: #1f2933;
+  font-size: 1.5rem;
+  font-weight: 800;
+}
+
+.metric-note {
+  margin: 6px 0 0;
+  color: #7b8493;
+  font-size: 0.8125rem;
+}
+
+.panel-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.1fr) minmax(320px, 0.9fr);
+  gap: 16px;
+}
+
+.panel {
+  padding: 20px;
+}
+
+.panel h3 {
+  margin: 0 0 16px;
+  font-size: 1rem;
+}
+
+.pipeline {
+  display: grid;
+  gap: 12px;
+}
+
+.pipeline-step {
+  display: grid;
+  grid-template-columns: 28px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 12px;
+  min-height: 44px;
+}
+
+.step-index {
+  width: 28px;
+  height: 28px;
+  display: grid;
+  place-items: center;
+  border-radius: 999px;
+  background: #e5f2ee;
+  color: #17424a;
+  font-size: 0.8125rem;
+  font-weight: 800;
+}
+
+.step-title {
+  margin: 0;
+  font-weight: 700;
+}
+
+.step-status {
+  color: #697586;
+  font-size: 0.85rem;
+}
+
+.signal-list {
+  display: grid;
+  gap: 12px;
+}
+
+.signal-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid #edf0f4;
+}
+
+.signal-row:last-child {
+  padding-bottom: 0;
+  border-bottom: 0;
+}
+
+.signal-label {
+  margin: 0;
+  color: #697586;
+  font-size: 0.875rem;
+}
+
+.signal-value {
+  margin: 4px 0 0;
+  font-weight: 800;
+}
+
+@media (max-width: 1100px) {
+  .metric-grid,
+  .panel-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 720px) {
+  .page-header {
+    flex-direction: column;
+  }
+
+  .metric-grid,
+  .panel-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
