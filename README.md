@@ -33,3 +33,17 @@ scripts           Developer automation scripts
 3. Open pull requests back into `main`.
 4. Add tests and CI as the implementation appears.
 
+## Local Infrastructure
+
+Start the current backend infrastructure stack:
+
+```powershell
+Copy-Item .env.example .env
+docker compose -f infra/docker-compose.yml up --build
+```
+
+Backend health check:
+
+```text
+http://localhost:8000/api/v1/health
+```
