@@ -59,3 +59,11 @@ Worker ping check:
 ```powershell
 docker compose --env-file .env -f infra/docker-compose.yml exec backend python -c "from app.workers.tasks.health import ping; print(ping.delay().get(timeout=10))"
 ```
+
+## CI Checks
+
+GitHub Actions runs focused checks for each project area:
+
+- Backend: `uv sync`, `ruff`, and `pytest`
+- Frontend: `npm ci`, Angular build, and spec TypeScript checks
+- Infrastructure: Docker Compose configuration validation
