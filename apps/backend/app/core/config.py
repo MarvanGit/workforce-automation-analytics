@@ -2,7 +2,7 @@ from functools import lru_cache
 
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
-# Configuration settings for the application
+
 class Settings(BaseSettings):
     model_config = SettingsConfigDict(env_file=".env", extra="ignore")
 
@@ -10,6 +10,8 @@ class Settings(BaseSettings):
     environment: str = "local"
     api_v1_prefix: str = "/api/v1"
     backend_cors_origins: str = "http://localhost:4200"
+    database_url: str = ""
+    redis_url: str = "redis://redis:6379/0"
 
     @property
     def cors_origins(self) -> list[str]:
@@ -19,4 +21,3 @@ class Settings(BaseSettings):
 @lru_cache
 def get_settings() -> Settings:
     return Settings()
-
