@@ -8,6 +8,7 @@ Local service orchestration for the workforce analytics platform.
 - `postgres`: PostgreSQL on port `5432`
 - `redis`: Redis on port `6379`
 - `worker`: Celery worker using Redis as broker/result backend
+- `frontend`: Angular dashboard on port `4200`
 
 ## Commands
 
@@ -45,4 +46,10 @@ Check the worker ping task:
 
 ```powershell
 docker compose --env-file .env -f infra/docker-compose.yml exec backend python -c "from app.workers.tasks.health import ping; print(ping.delay().get(timeout=10))"
+```
+
+Open the frontend:
+
+```text
+http://localhost:4200
 ```

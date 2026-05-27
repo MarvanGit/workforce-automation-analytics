@@ -1,0 +1,43 @@
+<section class="dashboard">
+  <div class="page-header">
+    <div>
+      <h2>Operations Overview</h2>
+      <p>Availability imports, scheduling runs, and workload signals will converge here as the core modules come online.</p>
+    </div>
+  </div>
+
+  <div class="metric-grid">
+    <article class="metric-card" *ngFor="let metric of metrics">
+      <p class="metric-label">{{ metric.label }}</p>
+      <p class="metric-value">{{ metric.value }}</p>
+      <p class="metric-note">{{ metric.note }}</p>
+    </article>
+  </div>
+
+  <div class="panel-grid">
+    <section class="panel">
+      <h3>Scheduling Pipeline</h3>
+      <div class="pipeline">
+        <div class="pipeline-step" *ngFor="let step of pipeline; let index = index">
+          <span class="step-index">{{ index + 1 }}</span>
+          <p class="step-title">{{ step.title }}</p>
+          <span class="step-status">{{ step.status }}</span>
+        </div>
+      </div>
+    </section>
+
+    <section class="panel">
+      <h3>Planning Signals</h3>
+      <div class="signal-list">
+        <div class="signal-row" *ngFor="let signal of signals">
+          <div>
+            <p class="signal-label">{{ signal.label }}</p>
+            <p class="signal-value">{{ signal.value }}</p>
+          </div>
+          <span class="step-status">{{ signal.status }}</span>
+        </div>
+      </div>
+    </section>
+  </div>
+</section>
+
