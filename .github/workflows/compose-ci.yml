@@ -1,0 +1,43 @@
+name: Compose CI
+
+on:
+  push:
+    paths:
+      - "infra/**"
+      - "apps/backend/Dockerfile"
+      - "apps/frontend/Dockerfile"
+      - ".env.example"
+      - ".github/workflows/compose-ci.yml"
+  pull_request:
+    paths:
+      - "infra/**"
+      - "apps/backend/Dockerfile"
+      - "apps/frontend/Dockerfile"
+      - ".env.example"
+      - ".github/workflows/compose-ci.yml"
+
+jobs:
+  compose:
+    name: Docker Compose config
+    runs-on: ubuntu-latest
+
+    env:
+      APP_NAME: Workforce Automation Analytics
+      ENVIRONMENT: ci
+      API_V1_PREFIX: /api/v1
+      BACKEND_CORS_ORIGINS: http://localhost:4200
+      POSTGRES_DB: workforce_analytics
+      POSTGRES_USER: ci_workforce_user
+      POSTGRES_PASSWORD: ci_workforce_password
+      DATABASE_URL: ""
+      REDIS_URL: redis://redis:6379/0
+      CELERY_BROKER_URL: redis://redis:6379/0
+      CELERY_RESULT_BACKEND: redis://redis:6379/1
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Validate Compose configuration
+        run: docker compose -f infra/docker-compose.yml config
+
