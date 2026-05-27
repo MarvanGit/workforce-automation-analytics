@@ -12,6 +12,8 @@ class Settings(BaseSettings):
     backend_cors_origins: str = "http://localhost:4200"
     database_url: str = ""
     redis_url: str = "redis://redis:6379/0"
+    celery_broker_url: str = "redis://redis:6379/0"
+    celery_result_backend: str = "redis://redis:6379/1"
 
     @property
     def cors_origins(self) -> list[str]:

@@ -47,3 +47,9 @@ Backend health check:
 ```text
 http://localhost:8000/api/v1/health
 ```
+
+Worker ping check:
+
+```powershell
+docker compose --env-file .env -f infra/docker-compose.yml exec backend python -c "from app.workers.tasks.health import ping; print(ping.delay().get(timeout=10))"
+```
