@@ -27,3 +27,9 @@ Initial health endpoint:
 ```text
 GET /api/v1/health
 ```
+
+Celery worker entrypoint:
+
+```powershell
+celery -A app.workers.celery_app:celery_app worker --loglevel=INFO
+```
