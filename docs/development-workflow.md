@@ -27,15 +27,15 @@ phase-1-project-foundation
 - Availability.
 - Vacation and sick leave.
 - Shift demand.
-- Import history.
+- Scheduling runs and generated shifts.
 
 ### Phase 3: Google Sheets Integration
 
 - Service account authentication.
 - Sheet reader.
 - Parser and mapper.
-- Import validation.
-- Import error reporting.
+- Basic import validation.
+- Persist valid availability and absence records.
 
 ### Phase 4: Scheduling Engine
 
@@ -49,9 +49,8 @@ phase-1-project-foundation
 
 - Workload analysis.
 - Availability overview.
-- Scheduling conflicts.
 - Shift coverage.
-- Import status.
+- Weekly generated schedule.
 
 ### Phase 6: Testing and CI Hardening
 
@@ -59,4 +58,3 @@ phase-1-project-foundation
 - Scheduling-engine tests.
 - Playwright end-to-end tests.
 - GitHub Actions workflows.
-

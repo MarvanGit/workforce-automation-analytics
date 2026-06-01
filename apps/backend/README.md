@@ -33,3 +33,11 @@ Celery worker entrypoint:
 ```powershell
 celery -A app.workers.celery_app:celery_app worker --loglevel=INFO
 ```
+
+Run database migrations:
+
+```powershell
+uv run alembic upgrade head
+```
+
+The migration command expects `DATABASE_URL` to be configured, either through `.env` or the current shell.

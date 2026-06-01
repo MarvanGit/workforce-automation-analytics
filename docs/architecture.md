@@ -44,17 +44,16 @@ flowchart LR
 ## Primary Domains
 
 - Employees
-- Employee external references
-- Google Sheet sources
-- Availability import runs
-- Availability import errors
 - Availability records
-- Vacation periods
-- Sick leaves
+- Absences, including vacations and sick leave
 - Shift templates
 - Shift demand
 - Scheduling runs
 - Scheduled shifts
-- Scheduling conflicts
-- Workload metrics
 
+Deferred domains:
+
+- Google Sheet source management
+- Import history and detailed validation reporting
+- Advanced scheduling diagnostics
+- Workload history and analytics
