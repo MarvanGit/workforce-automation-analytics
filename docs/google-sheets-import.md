@@ -18,7 +18,7 @@ Do not commit service account JSON files.
 ## Expected Sheet Columns
 
 ```text
-employee_id | employee_name | date | availability | preferred_shift | notes
+employee_code | employee_name | date | start_time | end_time | availability | notes
 ```
 
 ## Import Flow
@@ -26,8 +26,8 @@ employee_id | employee_name | date | availability | preferred_shift | notes
 1. Read configured spreadsheet range.
 2. Parse raw rows.
 3. Map rows to internal availability input objects.
-4. Validate employee IDs, dates, availability values, duplicates, and leave conflicts.
+4. Validate employee codes, dates, time windows, availability values, and duplicates.
 5. Persist valid records.
-6. Persist invalid rows as import errors.
-7. Show import status and errors in the dashboard.
+6. Return a simple summary of imported rows and validation errors.
 
+Persisted import history and detailed validation reporting are deferred until after the basic import, analysis, and weekly scheduling flow works.

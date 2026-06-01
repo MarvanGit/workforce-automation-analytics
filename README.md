@@ -1,8 +1,8 @@
 # Workforce Automation Analytics
 
-Full-stack workforce analytics and scheduling platform for importing employee availability, validating planning data, optimizing shifts, and analyzing workload distribution.
+Full-stack workforce analytics and scheduling platform for importing employee availability, analyzing weekly coverage, and generating retail shift schedules.
 
-This project is being built as a realistic workforce planning system: employees can maintain availability in Google Sheets, the backend imports and validates that data, and the scheduling engine will use constraint optimization to produce shift plans that respect operational requirements, employee availability, leave periods, and fairness goals.
+This project is being built as a realistic workforce planning system: employees can maintain availability in Google Sheets, the backend imports and validates that data, and the scheduling engine will produce weekly shift plans that respect staffing demand, employee availability, and leave periods.
 
 ## Project Status
 
@@ -13,31 +13,30 @@ In development. The current foundation includes:
 - PostgreSQL and Redis services through Docker Compose
 - Angular dashboard shell with routing and an operations overview
 - GitHub Actions workflows for backend, frontend, and Compose validation
+- Retail-focused SQLAlchemy data model with Alembic migration tooling
 - Architecture documentation for Google Sheets imports and scheduling logic
 
-Upcoming work will add the core database models, Google Sheets ingestion, scheduling constraints, analytics views, and end-to-end tests.
+Upcoming work will add Google Sheets ingestion, weekly availability analysis, schedule generation, dashboard views, and end-to-end tests.
 
 ## Why This Project Exists
 
-Workforce scheduling often starts in spreadsheets, but quickly becomes difficult to manage when availability, vacations, sick leaves, staffing demand, workload balance, and shift preferences all interact.
+Workforce scheduling often starts in spreadsheets, but quickly becomes difficult to manage when availability, vacations, sick leaves, and staffing demand all interact.
 
 This platform is designed to bridge that gap:
 
 - Keep Google Sheets as a simple data-entry surface for availability.
 - Validate and normalize planning data in a backend system.
 - Store clean operational data in PostgreSQL.
-- Run optimization jobs asynchronously.
-- Show scheduling results, conflicts, and analytics in a dashboard.
+- Generate weekly schedules from clean availability and demand data.
+- Show availability analysis and generated schedules in a dashboard.
 
 ## Planned Capabilities
 
 - Import employee availability from Google Sheets.
-- Validate sheet rows and report import errors.
 - Manage employees, availability, vacations, sick leaves, and shift demand.
 - Generate schedules using Google OR-Tools.
 - Model hard constraints such as unavailability and leave periods.
-- Model soft constraints such as preferred shifts and workload fairness.
-- Analyze shift coverage, workload distribution, scheduling conflicts, and import status.
+- Analyze weekly availability and shift coverage.
 - Run backend, worker, database, cache, and frontend services locally with Docker.
 
 ## Architecture
@@ -86,6 +85,8 @@ infra/          Docker Compose and infrastructure docs
 docs/           Architecture, import, and development workflow notes
 .github/        GitHub Actions workflows
 ```
+
+Database design notes and the ER diagram live in [docs/database-design.md](docs/database-design.md).
 
 ## Local Development
 
@@ -172,4 +173,3 @@ The project is being built in small, reviewable branches:
 10. End-to-end testing
 
 This keeps each pull request focused and makes the system easier to review as it grows.
-
