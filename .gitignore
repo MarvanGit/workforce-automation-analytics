@@ -5,6 +5,7 @@
 *.local
 service-account*.json
 google-credentials*.json
+_private-learning/
 
 # Python
 __pycache__/
