@@ -14,6 +14,9 @@ class Settings(BaseSettings):
     redis_url: str = "redis://redis:6379/0"
     celery_broker_url: str = "redis://redis:6379/0"
     celery_result_backend: str = "redis://redis:6379/1"
+    google_sheets_spreadsheet_id: str = ""
+    google_sheets_availability_range: str = "Availability!A:H"
+    google_application_credentials: str = ""
 
     @property
     def cors_origins(self) -> list[str]:
