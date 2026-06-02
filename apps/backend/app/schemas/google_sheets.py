@@ -31,6 +31,11 @@ class AvailabilityPreviewResponse(BaseModel):
     error_count: int
 
 
+class AvailabilityImportResponse(BaseModel):
+    imported_employee_count: int
+    imported_availability_count: int
+
+
 def build_availability_preview_response(
     preview: AvailabilitySheetPreview,
 ) -> AvailabilityPreviewResponse:
@@ -46,3 +51,12 @@ def build_availability_preview_response(
         row_count=len(preview.rows),
         error_count=len(preview.errors),
     )
+
+
+def build_availability_error_details(
+    preview: AvailabilitySheetPreview,
+) -> list[dict[str, int | str]]:
+    return [
+        AvailabilityPreviewError.model_validate(error, from_attributes=True).model_dump()
+        for error in preview.errors
+    ]
