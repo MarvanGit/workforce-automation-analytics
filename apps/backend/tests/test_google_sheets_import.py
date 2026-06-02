@@ -1,8 +1,10 @@
 import pytest
 from fastapi.testclient import TestClient
 
+from app.db.session import get_db
 from app.integrations.google_sheets import GoogleSheetsConfigError, read_sheet_values
 from app.main import app
+from app.services.availability_storage import AvailabilityImportResult
 
 
 class FakeRequest:
@@ -182,3 +184,113 @@ def test_preview_endpoint_requires_monday_week_start() -> None:
 
     assert response.status_code == 400
     assert response.json()["detail"] == "week_start must be a Monday."
+
+
+def test_import_endpoint_stores_valid_rows(monkeypatch: pytest.MonkeyPatch) -> None:
+    from app.api.v1 import google_sheets
+
+    saved_preview = None
+    saved_week_start = None
+
+    def fake_read_sheet_values(
+        spreadsheet_id: str,
+        sheet_range: str,
+        credentials_path: str,
+    ) -> list[list[str]]:
+        return [
+            [
+                "employee_code",
+                "employee_name",
+                "monday",
+                "tuesday",
+                "wednesday",
+                "thursday",
+                "friday",
+                "saturday",
+            ],
+            ["E001", "Sara Ahmed", "08:00 - 16:00", "N/A", "N/A", "N/A", "N/A", "N/A"],
+        ]
+
+    async def fake_save_availability_preview(db, preview, week_start):
+        nonlocal saved_preview, saved_week_start
+        saved_preview = preview
+        saved_week_start = week_start
+        return AvailabilityImportResult(
+            employee_count=1,
+            availability_count=len(preview.rows),
+        )
+
+    async def fake_get_db():
+        yield object()
+
+    monkeypatch.setattr(google_sheets, "read_sheet_values", fake_read_sheet_values)
+    monkeypatch.setattr(google_sheets, "save_availability_preview", fake_save_availability_preview)
+    app.dependency_overrides[get_db] = fake_get_db
+
+    try:
+        client = TestClient(app)
+        response = client.post(
+            "/api/v1/google-sheets/availability/import?week_start=2026-06-08"
+        )
+    finally:
+        app.dependency_overrides.clear()
+
+    assert response.status_code == 200
+    assert response.json() == {
+        "imported_employee_count": 1,
+        "imported_availability_count": 6,
+    }
+    assert saved_preview is not None
+    assert len(saved_preview.rows) == 6
+    assert saved_week_start.isoformat() == "2026-06-08"
+
+
+def test_import_endpoint_rejects_validation_errors(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    from app.api.v1 import google_sheets
+
+    def fake_read_sheet_values(
+        spreadsheet_id: str,
+        sheet_range: str,
+        credentials_path: str,
+    ) -> list[list[str]]:
+        return [
+            [
+                "employee_code",
+                "employee_name",
+                "monday",
+                "tuesday",
+                "wednesday",
+                "thursday",
+                "friday",
+                "saturday",
+            ],
+            ["E001", "Sara Ahmed", "bad", "N/A", "N/A", "N/A", "N/A", "N/A"],
+        ]
+
+    async def fake_get_db():
+        yield object()
+
+    monkeypatch.setattr(google_sheets, "read_sheet_values", fake_read_sheet_values)
+    app.dependency_overrides[get_db] = fake_get_db
+
+    try:
+        client = TestClient(app)
+        response = client.post(
+            "/api/v1/google-sheets/availability/import?week_start=2026-06-08"
+        )
+    finally:
+        app.dependency_overrides.clear()
+
+    assert response.status_code == 400
+    assert response.json()["detail"] == {
+        "message": "Sheet has validation errors.",
+        "errors": [
+            {
+                "row_number": 2,
+                "field": "monday",
+                "message": "Use HH:MM - HH:MM or N/A.",
+            }
+        ],
+    }

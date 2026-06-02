@@ -54,13 +54,30 @@ Persisted import history and detailed validation reporting are deferred until af
 
 ## MVP Preview Endpoint
 
-The first backend endpoint reads the configured sheet range and returns parsed rows without writing to the database:
+This endpoint reads the configured sheet range and returns parsed rows without writing to the database:
 
 ```text
 GET /api/v1/google-sheets/availability/preview?week_start=2026-06-08
 ```
 
 `week_start` must be the Monday date for the displayed sheet week. The backend uses it to convert weekday columns into real dates.
+
+## MVP Import Endpoint
+
+This endpoint reads the same configured sheet range, validates it, and stores the rows in PostgreSQL:
+
+```text
+POST /api/v1/google-sheets/availability/import?week_start=2026-06-08
+```
+
+If the sheet contains validation errors, the endpoint returns `400` and does not write anything.
+
+When the sheet is valid, the backend:
+
+1. Creates missing employees from `employee_code` and `employee_name`.
+2. Updates the employee name when the sheet provides one.
+3. Deletes the existing Monday-Saturday availability for those employees.
+4. Inserts the newly imported availability records.
 
 This endpoint needs:
 
