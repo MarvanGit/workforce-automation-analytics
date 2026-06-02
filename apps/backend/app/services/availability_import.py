@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from datetime import date, time, timedelta
+from datetime import date, datetime, time, timedelta
 
 from app.db.enums import AvailabilityType
 
@@ -23,7 +23,7 @@ WEEKDAYS = [
     ("saturday", 5),
 ]
 
-NOT_AVAILABLE_VALUES = {"n/a", "na", "not available", "unavailable"}
+NOT_AVAILABLE_VALUES = {"n/a", "na", "not available", "unavailable", "off"}
 
 
 @dataclass(frozen=True)
@@ -167,10 +167,20 @@ def _optional_text(value: str) -> str | None:
 
 
 def _parse_time(value: str) -> time | None:
+    cleaned = value.strip().upper()
+
     try:
-        return time.fromisoformat(value.strip())
+        return time.fromisoformat(cleaned)
     except ValueError:
-        return None
+        pass
+
+    for time_format in ["%I%p", "%I %p", "%I:%M%p", "%I:%M %p"]:
+        try:
+            return datetime.strptime(cleaned, time_format).time()
+        except ValueError:
+            continue
+
+    return None
 
 
 def _error(row_number: int, field: str, message: str) -> AvailabilitySheetError:

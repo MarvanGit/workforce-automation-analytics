@@ -86,3 +86,27 @@ GOOGLE_SHEETS_SPREADSHEET_ID=
 GOOGLE_SHEETS_AVAILABILITY_RANGE=Availability!A:H
 GOOGLE_APPLICATION_CREDENTIALS=
 ```
+
+## Docker Backend Test
+
+For Docker testing, keep `GOOGLE_APPLICATION_CREDENTIALS` in `.env` as the host path to the local JSON credentials file.
+
+Example:
+
+```env
+GOOGLE_APPLICATION_CREDENTIALS=D:/path/to/google-credentials.local.json
+```
+
+Then start the backend with the Google Sheets override file:
+
+```powershell
+docker compose --env-file .env -f infra/docker-compose.yml -f infra/docker-compose.google-sheets.yml up -d --build backend
+```
+
+The override mounts the JSON file into the backend container as:
+
+```text
+/run/secrets/google-credentials.json
+```
+
+Do not commit the JSON credentials file.
