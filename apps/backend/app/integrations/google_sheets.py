@@ -2,6 +2,7 @@ from typing import Any
 
 from google.oauth2 import service_account
 from googleapiclient.discovery import build
+from googleapiclient.errors import HttpError
 
 SHEETS_READONLY_SCOPE = "https://www.googleapis.com/auth/spreadsheets.readonly"
 
@@ -33,10 +34,16 @@ def read_sheet_values(
         raise GoogleSheetsConfigError("GOOGLE_SHEETS_AVAILABILITY_RANGE must be configured.")
 
     sheets_service = service or build_sheets_service(credentials_path)
-    result = (
-        sheets_service.spreadsheets()
-        .values()
-        .get(spreadsheetId=spreadsheet_id, range=sheet_range)
-        .execute()
-    )
+    try:
+        result = (
+            sheets_service.spreadsheets()
+            .values()
+            .get(spreadsheetId=spreadsheet_id, range=sheet_range)
+            .execute()
+        )
+    except HttpError as error:
+        raise GoogleSheetsConfigError(
+            f"Google Sheets API request failed: {error.reason}"
+        ) from error
+
     return result.get("values", [])

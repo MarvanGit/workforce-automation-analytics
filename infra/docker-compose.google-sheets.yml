@@ -1,0 +1,13 @@
+services:
+  backend:
+    environment:
+      GOOGLE_SHEETS_SPREADSHEET_ID: ${GOOGLE_SHEETS_SPREADSHEET_ID:?Set GOOGLE_SHEETS_SPREADSHEET_ID in .env}
+      GOOGLE_SHEETS_AVAILABILITY_RANGE: ${GOOGLE_SHEETS_AVAILABILITY_RANGE:-Availability!A:H}
+      GOOGLE_APPLICATION_CREDENTIALS: /run/secrets/google-credentials.json
+    volumes:
+      - type: bind
+        source: ${GOOGLE_APPLICATION_CREDENTIALS:?Set GOOGLE_APPLICATION_CREDENTIALS in .env}
+        target: /run/secrets/google-credentials.json
+        read_only: true
+        bind:
+          create_host_path: false

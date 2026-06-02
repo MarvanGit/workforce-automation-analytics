@@ -58,3 +58,45 @@ phase-1-project-foundation
 - Scheduling-engine tests.
 - Playwright end-to-end tests.
 - GitHub Actions workflows.
+
+## Local Google Sheets Smoke Test
+
+This test verifies the Docker backend can read availability from Google Sheets and store it in PostgreSQL.
+
+Keep the local credentials file out of Git. The `.env` value should point to the host machine path:
+
+```env
+GOOGLE_APPLICATION_CREDENTIALS=D:/path/to/google-credentials.local.json
+```
+
+Start the backend with the Google Sheets override:
+
+```powershell
+docker compose --env-file .env -f infra/docker-compose.yml -f infra/docker-compose.google-sheets.yml up -d --build backend
+```
+
+Run migrations:
+
+```powershell
+docker compose --env-file .env -f infra/docker-compose.yml -f infra/docker-compose.google-sheets.yml exec backend alembic upgrade head
+```
+
+Preview the sheet before importing:
+
+```powershell
+$weekStart = "2026-06-01"
+Invoke-RestMethod -Method Get -Uri "http://localhost:8000/api/v1/google-sheets/availability/preview?week_start=$weekStart" | ConvertTo-Json -Depth 10
+```
+
+Import the sheet when the preview has no errors:
+
+```powershell
+Invoke-RestMethod -Method Post -Uri "http://localhost:8000/api/v1/google-sheets/availability/import?week_start=$weekStart" | ConvertTo-Json -Depth 10
+```
+
+Check stored data:
+
+```powershell
+Invoke-RestMethod -Method Get -Uri "http://localhost:8000/api/v1/employees" | ConvertTo-Json -Depth 10
+Invoke-RestMethod -Method Get -Uri "http://localhost:8000/api/v1/availability?week_start=$weekStart" | ConvertTo-Json -Depth 10
+```

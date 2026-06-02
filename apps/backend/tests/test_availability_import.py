@@ -130,3 +130,33 @@ def test_parse_weekly_availability_sheet_ignores_empty_rows() -> None:
 
     assert preview.rows == []
     assert preview.errors == []
+
+
+def test_parse_weekly_availability_sheet_accepts_am_pm_and_off() -> None:
+    preview = parse_availability_sheet(
+        [
+            [
+                "employee_code",
+                "employee_name",
+                "monday",
+                "tuesday",
+                "wednesday",
+                "thursday",
+                "friday",
+                "saturday",
+            ],
+            ["E001", "John", "9AM-5PM", "10 AM - 6 PM", "8:30AM-4:30PM", "Off", "N/A", "off"],
+        ],
+        week_start=date(2026, 6, 8),
+    )
+
+    assert preview.errors == []
+    assert len(preview.rows) == 6
+
+    assert preview.rows[0].start_time == time(9, 0)
+    assert preview.rows[0].end_time == time(17, 0)
+    assert preview.rows[1].start_time == time(10, 0)
+    assert preview.rows[1].end_time == time(18, 0)
+    assert preview.rows[2].start_time == time(8, 30)
+    assert preview.rows[2].end_time == time(16, 30)
+    assert preview.rows[3].availability_type == AvailabilityType.UNAVAILABLE
