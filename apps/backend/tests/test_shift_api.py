@@ -53,6 +53,86 @@ def test_get_shift_templates_returns_stored_templates(monkeypatch) -> None:
     }
 
 
+def test_create_shift_template_returns_created_template(monkeypatch) -> None:
+    template = ShiftTemplate(
+        name="Morning",
+        start_time=time(9, 0),
+        end_time=time(17, 0),
+        duration_minutes=480,
+        is_overnight=False,
+        active=True,
+    )
+    template.id = "template-1"
+
+    async def fake_create_shift_template(db, name, start_time, end_time, active):
+        assert name == "Morning"
+        assert start_time == time(9, 0)
+        assert end_time == time(17, 0)
+        assert active is True
+        return template
+
+    monkeypatch.setattr(
+        shifts_api,
+        "create_shift_template",
+        fake_create_shift_template,
+    )
+    app.dependency_overrides[get_db] = fake_get_db
+
+    try:
+        client = TestClient(app)
+        response = client.post(
+            "/api/v1/shift-templates",
+            json={
+                "name": "Morning",
+                "start_time": "09:00",
+                "end_time": "17:00",
+                "active": True,
+            },
+        )
+    finally:
+        app.dependency_overrides.clear()
+
+    assert response.status_code == 201
+    assert response.json() == {
+        "id": "template-1",
+        "name": "Morning",
+        "start_time": "09:00:00",
+        "end_time": "17:00:00",
+        "duration_minutes": 480,
+        "is_overnight": False,
+        "active": True,
+    }
+
+
+def test_create_shift_template_returns_validation_error(monkeypatch) -> None:
+    async def fake_create_shift_template(db, name, start_time, end_time, active):
+        raise ValueError("shift template name already exists.")
+
+    monkeypatch.setattr(
+        shifts_api,
+        "create_shift_template",
+        fake_create_shift_template,
+    )
+    app.dependency_overrides[get_db] = fake_get_db
+
+    try:
+        client = TestClient(app)
+        response = client.post(
+            "/api/v1/shift-templates",
+            json={
+                "name": "Morning",
+                "start_time": "09:00",
+                "end_time": "17:00",
+                "active": True,
+            },
+        )
+    finally:
+        app.dependency_overrides.clear()
+
+    assert response.status_code == 400
+    assert response.json()["detail"] == "shift template name already exists."
+
+
 def test_get_shift_demand_returns_week_rows(monkeypatch) -> None:
     rows = [
         ShiftDemandListItem(
@@ -102,6 +182,101 @@ def test_get_shift_demand_returns_week_rows(monkeypatch) -> None:
         ],
         "row_count": 1,
     }
+
+
+def test_create_shift_demand_returns_created_row(monkeypatch) -> None:
+    row = ShiftDemandListItem(
+        id="demand-1",
+        demand_date=date(2026, 6, 8),
+        shift_template_id="template-1",
+        shift_template_name="Morning",
+        shift_start_time=time(9, 0),
+        shift_end_time=time(17, 0),
+        required_employee_count=2,
+        notes=None,
+    )
+
+    async def fake_create_shift_demand(
+        db,
+        demand_date,
+        shift_template_id,
+        required_employee_count,
+        notes,
+    ):
+        assert demand_date == date(2026, 6, 8)
+        assert shift_template_id == "template-1"
+        assert required_employee_count == 2
+        assert notes is None
+        return row
+
+    monkeypatch.setattr(
+        shifts_api,
+        "create_shift_demand",
+        fake_create_shift_demand,
+    )
+    app.dependency_overrides[get_db] = fake_get_db
+
+    try:
+        client = TestClient(app)
+        response = client.post(
+            "/api/v1/shift-demand",
+            json={
+                "demand_date": "2026-06-08",
+                "shift_template_id": "template-1",
+                "required_employee_count": 2,
+                "notes": None,
+            },
+        )
+    finally:
+        app.dependency_overrides.clear()
+
+    assert response.status_code == 201
+    assert response.json() == {
+        "id": "demand-1",
+        "demand_date": "2026-06-08",
+        "weekday": "monday",
+        "shift_template_id": "template-1",
+        "shift_template_name": "Morning",
+        "shift_start_time": "09:00:00",
+        "shift_end_time": "17:00:00",
+        "required_employee_count": 2,
+        "notes": None,
+    }
+
+
+def test_create_shift_demand_returns_validation_error(monkeypatch) -> None:
+    async def fake_create_shift_demand(
+        db,
+        demand_date,
+        shift_template_id,
+        required_employee_count,
+        notes,
+    ):
+        raise ValueError("shift_template_id was not found.")
+
+    monkeypatch.setattr(
+        shifts_api,
+        "create_shift_demand",
+        fake_create_shift_demand,
+    )
+    app.dependency_overrides[get_db] = fake_get_db
+
+    try:
+        client = TestClient(app)
+        response = client.post(
+            "/api/v1/shift-demand",
+            json={
+                "demand_date": "2026-06-08",
+                "shift_template_id": "missing-template",
+                "required_employee_count": 2,
+                "notes": None,
+            },
+        )
+    finally:
+        app.dependency_overrides.clear()
+
+    assert response.status_code == 400
+    assert response.json()["detail"] == "shift_template_id was not found."
 
 
 def test_get_shift_demand_requires_monday() -> None:
