@@ -7,6 +7,7 @@ from app.db.enums import AvailabilityType, SchedulingRunStatus
 from app.db.session import get_db
 from app.main import app
 from app.services.availability_queries import AvailabilityListItem
+from app.services.scheduling_queries import ScheduleRunListItem
 from app.services.scheduling_storage import SavedScheduledShift, SavedScheduleRun
 from app.services.shift_queries import ShiftDemandListItem
 
@@ -243,3 +244,116 @@ def test_post_schedule_run_requires_monday() -> None:
 
     assert response.status_code == 400
     assert response.json()["detail"] == "week_start must be a Monday."
+
+
+def test_get_schedule_runs_returns_saved_runs(monkeypatch) -> None:
+    rows = [
+        ScheduleRunListItem(
+            id="run-1",
+            start_date=date(2026, 6, 8),
+            end_date=date(2026, 6, 13),
+            status=SchedulingRunStatus.COMPLETED,
+        )
+    ]
+
+    async def fake_list_schedule_runs(db):
+        return rows
+
+    monkeypatch.setattr(scheduling_api, "list_schedule_runs", fake_list_schedule_runs)
+    app.dependency_overrides[get_db] = fake_get_db
+
+    try:
+        client = TestClient(app)
+        response = client.get("/api/v1/scheduling/runs")
+    finally:
+        app.dependency_overrides.clear()
+
+    assert response.status_code == 200
+    assert response.json() == {
+        "rows": [
+            {
+                "id": "run-1",
+                "start_date": "2026-06-08",
+                "end_date": "2026-06-13",
+                "status": "completed",
+            }
+        ],
+        "row_count": 1,
+    }
+
+
+def test_get_schedule_run_by_id_returns_saved_run(monkeypatch) -> None:
+    saved_run = SavedScheduleRun(
+        id="run-1",
+        start_date=date(2026, 6, 8),
+        end_date=date(2026, 6, 13),
+        status=SchedulingRunStatus.COMPLETED,
+        scheduled_shifts=[
+            SavedScheduledShift(
+                id="scheduled-shift-1",
+                employee_id="employee-1",
+                employee_code="E001",
+                employee_name="Sara Ahmed",
+                shift_date=date(2026, 6, 8),
+                shift_template_id="template-1",
+                shift_template_name="Morning",
+                start_datetime="2026-06-08T09:00:00+00:00",
+                end_datetime="2026-06-08T17:00:00+00:00",
+            )
+        ],
+        warnings=[],
+    )
+
+    async def fake_get_schedule_run(db, run_id):
+        assert run_id == "run-1"
+        return saved_run
+
+    monkeypatch.setattr(scheduling_api, "get_schedule_run", fake_get_schedule_run)
+    app.dependency_overrides[get_db] = fake_get_db
+
+    try:
+        client = TestClient(app)
+        response = client.get("/api/v1/scheduling/runs/run-1")
+    finally:
+        app.dependency_overrides.clear()
+
+    assert response.status_code == 200
+    assert response.json() == {
+        "id": "run-1",
+        "start_date": "2026-06-08",
+        "end_date": "2026-06-13",
+        "status": "completed",
+        "scheduled_shifts": [
+            {
+                "id": "scheduled-shift-1",
+                "employee_id": "employee-1",
+                "employee_code": "E001",
+                "employee_name": "Sara Ahmed",
+                "shift_date": "2026-06-08",
+                "shift_template_id": "template-1",
+                "shift_template_name": "Morning",
+                "start_datetime": "2026-06-08T09:00:00Z",
+                "end_datetime": "2026-06-08T17:00:00Z",
+            }
+        ],
+        "scheduled_shift_count": 1,
+        "warnings": [],
+        "warning_count": 0,
+    }
+
+
+def test_get_schedule_run_by_id_returns_not_found(monkeypatch) -> None:
+    async def fake_get_schedule_run(db, run_id):
+        return None
+
+    monkeypatch.setattr(scheduling_api, "get_schedule_run", fake_get_schedule_run)
+    app.dependency_overrides[get_db] = fake_get_db
+
+    try:
+        client = TestClient(app)
+        response = client.get("/api/v1/scheduling/runs/missing-run")
+    finally:
+        app.dependency_overrides.clear()
+
+    assert response.status_code == 404
+    assert response.json()["detail"] == "Schedule run was not found."

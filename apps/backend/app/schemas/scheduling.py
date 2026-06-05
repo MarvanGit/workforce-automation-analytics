@@ -3,6 +3,7 @@ from datetime import date, datetime, time
 from pydantic import BaseModel
 
 from app.services.scheduling_preview import SchedulePreview
+from app.services.scheduling_queries import ScheduleRunListItem
 from app.services.scheduling_storage import SavedScheduleRun
 
 
@@ -58,6 +59,18 @@ class SavedScheduleRunResponse(BaseModel):
     warning_count: int
 
 
+class ScheduleRunSummaryResponse(BaseModel):
+    id: str
+    start_date: date
+    end_date: date
+    status: str
+
+
+class ScheduleRunsResponse(BaseModel):
+    rows: list[ScheduleRunSummaryResponse]
+    row_count: int
+
+
 def build_schedule_preview_response(
     preview: SchedulePreview,
 ) -> SchedulePreviewResponse:
@@ -74,6 +87,18 @@ def build_schedule_preview_response(
         assignment_count=assignment_count,
         warnings=preview.warnings,
         warning_count=len(preview.warnings),
+    )
+
+
+def build_schedule_runs_response(
+    runs: list[ScheduleRunListItem],
+) -> ScheduleRunsResponse:
+    return ScheduleRunsResponse(
+        rows=[
+            ScheduleRunSummaryResponse.model_validate(run, from_attributes=True)
+            for run in runs
+        ],
+        row_count=len(runs),
     )
 
 
