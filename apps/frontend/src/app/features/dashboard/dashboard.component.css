@@ -113,6 +113,12 @@ select:focus {
   color: #ffb4b8;
 }
 
+.status-pill.loading {
+  border-color: #3a3d78;
+  background: #17193a;
+  color: #d7dbff;
+}
+
 .metric-grid,
 .workspace-grid {
   display: grid;
