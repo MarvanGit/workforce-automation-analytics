@@ -10,17 +10,33 @@
         Week
         <input type="date" [(ngModel)]="weekStart" />
       </label>
-      <button type="button" class="button secondary" (click)="refreshDashboard()" [disabled]="isLoading">
-        Refresh
+      <button
+        type="button"
+        class="button secondary"
+        (click)="refreshDashboard()"
+        [disabled]="isLoading || weekStart === ''"
+      >
+        {{ isLoading ? 'Loading' : 'Refresh' }}
       </button>
-      <button type="button" class="button" (click)="importAvailability()" [disabled]="isLoading">
-        Import
+      <button
+        type="button"
+        class="button"
+        (click)="importAvailability()"
+        [disabled]="isLoading || weekStart === ''"
+      >
+        {{ isLoading ? 'Working' : 'Import' }}
       </button>
     </div>
   </div>
 
-  <div class="status-row" *ngIf="message || errorMessage">
-    <span class="status-pill" [class.error]="errorMessage">{{ errorMessage || message }}</span>
+  <div class="status-row" *ngIf="statusText">
+    <span
+      class="status-pill"
+      [class.error]="errorMessage"
+      [class.loading]="isLoading"
+    >
+      {{ statusText }}
+    </span>
   </div>
 
   <div class="metric-grid">
@@ -82,7 +98,7 @@
           End
           <input type="time" name="shiftEnd" [(ngModel)]="shiftEnd" />
         </label>
-        <button type="submit" class="button secondary" [disabled]="isLoading">
+        <button type="submit" class="button secondary" [disabled]="!canCreateTemplate">
           Create Template
         </button>
       </form>
@@ -101,7 +117,7 @@
           Needed
           <input type="number" min="1" name="requiredEmployeeCount" [(ngModel)]="requiredEmployeeCount" />
         </label>
-        <button type="submit" class="button" [disabled]="isLoading || selectedTemplateId === ''">
+        <button type="submit" class="button" [disabled]="!canCreateDemand">
           Add Demand
         </button>
       </form>
@@ -157,10 +173,20 @@
           <p>{{ schedulePreview?.assignment_count || 0 }} assignments</p>
         </div>
         <div class="button-group">
-          <button type="button" class="button secondary" (click)="previewSchedule()" [disabled]="isLoading">
+          <button
+            type="button"
+            class="button secondary"
+            (click)="previewSchedule()"
+            [disabled]="!canUseScheduleActions"
+          >
             Preview
           </button>
-          <button type="button" class="button" (click)="saveScheduleRun()" [disabled]="isLoading">
+          <button
+            type="button"
+            class="button"
+            (click)="saveScheduleRun()"
+            [disabled]="!canSaveScheduleRun"
+          >
             Save
           </button>
         </div>
@@ -173,7 +199,7 @@
       <div class="schedule-list">
         <article class="shift-row" *ngFor="let shift of schedulePreview?.shifts">
           <div>
-            <p>{{ shift.weekday }} · {{ shift.shift_template_name }}</p>
+            <p>{{ shift.weekday }} - {{ shift.shift_template_name }}</p>
             <span>{{ shift.shift_start_time }}-{{ shift.shift_end_time }}</span>
           </div>
           <div class="assigned-list">
@@ -209,7 +235,7 @@
         <h4>{{ selectedRun.start_date }} to {{ selectedRun.end_date }}</h4>
         <p>{{ selectedRun.scheduled_shift_count }} saved shifts</p>
         <div class="saved-shift" *ngFor="let shift of selectedRun.scheduled_shifts">
-          <span>{{ shift.employee_code }} · {{ shift.shift_template_name }}</span>
+          <span>{{ shift.employee_code }} - {{ shift.shift_template_name }}</span>
           <strong>{{ shift.shift_date }}</strong>
         </div>
       </div>
