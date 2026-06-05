@@ -30,6 +30,13 @@ class ShiftTemplatesResponse(BaseModel):
     row_count: int
 
 
+class ShiftTemplateCreateRequest(BaseModel):
+    name: str
+    start_time: time
+    end_time: time
+    active: bool = True
+
+
 class ShiftDemandResponse(BaseModel):
     id: str
     demand_date: date
@@ -47,6 +54,19 @@ class ShiftDemandWeekResponse(BaseModel):
     week_end: date
     rows: list[ShiftDemandResponse]
     row_count: int
+
+
+class ShiftDemandCreateRequest(BaseModel):
+    demand_date: date
+    shift_template_id: str
+    required_employee_count: int
+    notes: str | None = None
+
+
+def build_shift_template_response(
+    template: ShiftTemplate,
+) -> ShiftTemplateResponse:
+    return ShiftTemplateResponse.model_validate(template, from_attributes=True)
 
 
 def build_shift_templates_response(
