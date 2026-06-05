@@ -4,7 +4,7 @@
       <div class="brand-mark">WA</div>
       <div>
         <h1 class="brand-title">Workforce Analytics</h1>
-        <p class="brand-subtitle">Scheduling operations</p>
+        <p class="brand-subtitle">Retail scheduling command center</p>
       </div>
     </div>
 
@@ -17,12 +17,25 @@
   <aside class="sidebar">
     <nav class="nav-group" aria-label="Primary navigation">
       <a routerLink="/" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }" class="nav-link">
-        Dashboard
+        <span class="nav-icon">01</span>
+        <span>Dashboard</span>
       </a>
-      <a routerLink="/imports" routerLinkActive="active" class="nav-link">Imports</a>
-      <a routerLink="/availability" routerLinkActive="active" class="nav-link">Availability</a>
-      <a routerLink="/scheduling" routerLinkActive="active" class="nav-link">Scheduling</a>
-      <a routerLink="/analytics" routerLinkActive="active" class="nav-link">Analytics</a>
+      <a routerLink="/imports" routerLinkActive="active" class="nav-link">
+        <span class="nav-icon">02</span>
+        <span>Imports</span>
+      </a>
+      <a routerLink="/availability" routerLinkActive="active" class="nav-link">
+        <span class="nav-icon">03</span>
+        <span>Availability</span>
+      </a>
+      <a routerLink="/scheduling" routerLinkActive="active" class="nav-link">
+        <span class="nav-icon">04</span>
+        <span>Scheduling</span>
+      </a>
+      <a routerLink="/analytics" routerLinkActive="active" class="nav-link">
+        <span class="nav-icon">05</span>
+        <span>Analytics</span>
+      </a>
     </nav>
   </aside>
 
@@ -30,4 +43,3 @@
     <router-outlet />
   </main>
 </div>
-
