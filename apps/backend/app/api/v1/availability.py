@@ -18,10 +18,7 @@ DB_SESSION = Depends(get_db)
 
 
 @router.get("", response_model=AvailabilityWeekResponse)
-async def get_week_availability(
-    week_start: date,
-    db: AsyncSession = DB_SESSION,
-) -> AvailabilityWeekResponse:
+async def get_week_availability(week_start: date, db: AsyncSession = DB_SESSION,) -> AvailabilityWeekResponse:
     if week_start.weekday() != 0:
         raise HTTPException(status_code=400, detail="week_start must be a Monday.")
 
@@ -40,6 +37,7 @@ async def get_availability_summary(
     week_start: date,
     db: AsyncSession = DB_SESSION,
 ) -> AvailabilitySummaryResponse:
+    
     if week_start.weekday() != 0:
         raise HTTPException(status_code=400, detail="week_start must be a Monday.")
 
