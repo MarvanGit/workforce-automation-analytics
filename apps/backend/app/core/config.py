@@ -9,7 +9,7 @@ class Settings(BaseSettings):
     app_name: str = "Workforce Automation Analytics"
     environment: str = "local"
     api_v1_prefix: str = "/api/v1"
-    backend_cors_origins: str = "http://localhost:4200"
+    backend_cors_origins: str = "http://localhost:4200,http://127.0.0.1:4200"
     database_url: str = ""
     redis_url: str = "redis://redis:6379/0"
     celery_broker_url: str = "redis://redis:6379/0"

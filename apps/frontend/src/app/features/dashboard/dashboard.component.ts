@@ -58,6 +58,8 @@ export class DashboardComponent implements OnInit {
   activeAction = '';
   message = 'Ready';
   errorMessage = '';
+  backendStatus = 'Backend not checked';
+  backendOnline = false;
 
   readonly quickShifts = [
     { name: 'Opening', start: '09:00', end: '17:00' },
@@ -117,6 +119,7 @@ export class DashboardComponent implements OnInit {
 
   async refreshDashboard(): Promise<void> {
     await this.runAction('loading dashboard data', 'Dashboard data loaded', async () => {
+      await this.checkBackendHealth();
       this.employees = await this.schedulingApi.loadEmployees();
       this.shiftTemplates = await this.schedulingApi.loadShiftTemplates();
       this.shiftDemand = await this.schedulingApi.loadShiftDemand(this.weekStart);
@@ -225,6 +228,13 @@ export class DashboardComponent implements OnInit {
     this.scheduleRuns = await this.schedulingApi.loadScheduleRuns();
   }
 
+  private async checkBackendHealth(): Promise<void> {
+    const health = await this.schedulingApi.checkHealth();
+
+    this.backendOnline = health.status === 'ok';
+    this.backendStatus = this.backendOnline ? 'Backend connected' : 'Backend issue';
+  }
+
   private async runAction(
     activeAction: string,
     message: string,
@@ -238,6 +248,7 @@ export class DashboardComponent implements OnInit {
       await action();
       this.message = message;
     } catch (error) {
+      this.updateBackendStatusAfterError(error);
       this.errorMessage = this.errorText(error);
     } finally {
       this.isLoading = false;
@@ -268,6 +279,17 @@ export class DashboardComponent implements OnInit {
     }
 
     return 'Request failed';
+  }
+
+  private updateBackendStatusAfterError(error: unknown): void {
+    if (error instanceof HttpErrorResponse && error.status !== 0) {
+      this.backendOnline = true;
+      this.backendStatus = 'Backend is reachable';
+      return;
+    }
+
+    this.backendOnline = false;
+    this.backendStatus = 'Backend is not reachable';
   }
 
   private detailText(detail: unknown): string {

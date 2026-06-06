@@ -41,6 +41,9 @@
     >
       {{ statusText }}
     </span>
+    <span class="status-pill connection" [class.error]="!backendOnline">
+      {{ backendStatus }}
+    </span>
   </div>
 
   <div class="metric-grid">
