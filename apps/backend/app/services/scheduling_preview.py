@@ -52,6 +52,7 @@ def build_schedule_preview(
     demand_rows: list[ShiftDemandListItem],
 ) -> SchedulePreview:
     assigned_employee_ids_by_date: dict[date, set[str]] = {}
+    assignment_counts_by_employee_id: dict[str, int] = {}
     shift_previews = []
     warnings = []
 
@@ -64,6 +65,7 @@ def build_schedule_preview(
                 demand.demand_date,
                 set(),
             ),
+            assignment_counts_by_employee_id=assignment_counts_by_employee_id,
         )
 
         missing_count = demand.required_employee_count - len(assigned_employees)
@@ -103,6 +105,7 @@ def _choose_employees(
     availability_rows: list[AvailabilityListItem],
     absence_rows: list[AbsenceListItem],
     already_assigned_ids: set[str],
+    assignment_counts_by_employee_id: dict[str, int],
 ) -> list[ScheduleEmployeePreview]:
     candidates = []
 
@@ -118,11 +121,18 @@ def _choose_employees(
             )
         )
 
-    candidates.sort(key=lambda employee: employee.employee_code)
+    candidates.sort(
+        key=lambda employee: (
+            assignment_counts_by_employee_id.get(employee.employee_id, 0),
+            employee.employee_code,
+        )
+    )
     selected_employees = candidates[: demand.required_employee_count]
 
     for employee in selected_employees:
         already_assigned_ids.add(employee.employee_id)
+        current_count = assignment_counts_by_employee_id.get(employee.employee_id, 0)
+        assignment_counts_by_employee_id[employee.employee_id] = current_count + 1
 
     return selected_employees
 

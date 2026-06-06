@@ -116,6 +116,43 @@ def test_build_schedule_preview_does_not_double_assign_same_day() -> None:
     assert preview.shifts[1].missing_employee_count == 1
 
 
+def test_build_schedule_preview_spreads_assignments_across_week() -> None:
+    availability_rows = [
+        _availability("employee-1", "E001", "Sara Ahmed", time(9, 0), time(17, 0)),
+        _availability("employee-2", "E002", "John Doe", time(9, 0), time(17, 0)),
+        _availability(
+            "employee-1",
+            "E001",
+            "Sara Ahmed",
+            time(9, 0),
+            time(17, 0),
+            work_date=date(2026, 6, 9),
+        ),
+        _availability(
+            "employee-2",
+            "E002",
+            "John Doe",
+            time(9, 0),
+            time(17, 0),
+            work_date=date(2026, 6, 9),
+        ),
+    ]
+    demand_rows = [
+        _demand(demand_id="demand-1", demand_date=date(2026, 6, 8)),
+        _demand(demand_id="demand-2", demand_date=date(2026, 6, 9)),
+    ]
+
+    preview = build_schedule_preview(
+        week_start=date(2026, 6, 8),
+        availability_rows=availability_rows,
+        absence_rows=[],
+        demand_rows=demand_rows,
+    )
+
+    assert preview.shifts[0].assigned_employees[0].employee_code == "E001"
+    assert preview.shifts[1].assigned_employees[0].employee_code == "E002"
+
+
 def test_build_schedule_preview_warns_when_no_demand_exists() -> None:
     preview = build_schedule_preview(
         week_start=date(2026, 6, 8),
@@ -134,13 +171,14 @@ def _availability(
     employee_name: str,
     start_time: time,
     end_time: time,
+    work_date: date = date(2026, 6, 8),
 ) -> AvailabilityListItem:
     return AvailabilityListItem(
         id=f"availability-{employee_id}",
         employee_id=employee_id,
         employee_code=employee_code,
         employee_name=employee_name,
-        work_date=date(2026, 6, 8),
+        work_date=work_date,
         start_time=start_time,
         end_time=end_time,
         availability_type=AvailabilityType.AVAILABLE,
@@ -150,6 +188,7 @@ def _availability(
 
 def _demand(
     demand_id: str = "demand-1",
+    demand_date: date = date(2026, 6, 8),
     shift_template_name: str = "Morning",
     shift_start_time: time = time(9, 0),
     shift_end_time: time = time(17, 0),
@@ -157,7 +196,7 @@ def _demand(
 ) -> ShiftDemandListItem:
     return ShiftDemandListItem(
         id=demand_id,
-        demand_date=date(2026, 6, 8),
+        demand_date=demand_date,
         shift_template_id="template-1",
         shift_template_name=shift_template_name,
         shift_start_time=shift_start_time,
