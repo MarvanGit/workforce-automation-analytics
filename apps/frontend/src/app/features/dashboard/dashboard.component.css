@@ -147,12 +147,6 @@ select:focus {
   color: #d7dbff;
 }
 
-.status-pill.connection {
-  border-color: #24371f;
-  background: #101a0e;
-  color: #b8e3a8;
-}
-
 .status-pill.connection.error {
   border-color: #5f2528;
   background: #211113;
@@ -160,13 +154,34 @@ select:focus {
 }
 
 .metric-grid,
+.workflow-strip,
 .workspace-grid {
   display: grid;
   gap: 16px;
 }
 
-.metric-grid {
+.metric-grid,
+.workflow-strip {
   grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+.workflow-strip span {
+  min-height: 32px;
+  display: grid;
+  place-items: center;
+  border: 1px solid #1d1f24;
+  border-radius: 6px;
+  background: #101114;
+  color: #8a8f98;
+  font-size: 0.8rem;
+  font-weight: 650;
+}
+
+.status-pill.connection,
+.workflow-strip .ready {
+  border-color: #24371f;
+  background: #101a0e;
+  color: #b8e3a8;
 }
 
 .workspace-grid {
@@ -234,7 +249,7 @@ select:focus {
 
 .quick-shifts,
 .form-grid,
-.weekly-demand-form,
+.demand-form,
 .availability-list,
 .schedule-list,
 .run-list {
@@ -262,43 +277,13 @@ select:focus {
   align-items: end;
 }
 
-.weekly-demand-form {
+.demand-form {
+  grid-template-columns: minmax(200px, 1fr) minmax(190px, 0.9fr) 110px auto;
+  align-items: end;
   margin-top: 12px;
 }
 
-.weekly-demand-grid {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 10px;
-}
-
-.weekday-demand {
-  border: 1px solid #1d1f24;
-  border-radius: 6px;
-  background: #101114;
-  padding: 10px;
-}
-
-.weekday-title {
-  display: grid;
-  grid-template-columns: auto 1fr;
-  align-items: center;
-  gap: 4px 8px;
-  color: #f7f8f8;
-  font-size: 0.84rem;
-}
-
-.weekday-title small {
-  grid-column: 2;
-  color: #8a8f98;
-  font-size: 0.75rem;
-}
-
-.weekday-demand input[type='number'] {
-  margin-top: 10px;
-}
-
-.weekly-demand-form .button {
+.demand-form .button {
   justify-self: start;
 }
 
@@ -435,6 +420,10 @@ td {
   font-weight: 650;
 }
 
+.run-row.active {
+  border-color: #3a3d78;
+}
+
 .selected-run {
   margin-top: 16px;
   border-top: 1px solid #1d1f24;
@@ -456,7 +445,8 @@ td {
   .metric-grid,
   .workspace-grid,
   .form-grid,
-  .weekly-demand-grid {
+  .workflow-strip,
+  .demand-form {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
@@ -475,7 +465,8 @@ td {
   .workspace-grid,
   .quick-shifts,
   .form-grid,
-  .weekly-demand-grid {
+  .workflow-strip,
+  .demand-form {
     grid-template-columns: 1fr;
   }
 
