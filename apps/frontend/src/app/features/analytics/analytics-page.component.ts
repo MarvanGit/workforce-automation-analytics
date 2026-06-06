@@ -1,8 +1,8 @@
 import { CommonModule } from '@angular/common';
-import { HttpErrorResponse } from '@angular/common/http';
 import { Component, OnInit, inject } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 
+import { apiErrorMessage } from '../../core/api/api-error-message';
 import {
   AvailabilityDaySummary,
   EmployeeResponse,
@@ -28,6 +28,30 @@ export class AnalyticsPageComponent implements OnInit {
   isLoading = false;
   message = 'Ready';
   errorMessage = '';
+
+  get statusText(): string {
+    if (this.isLoading) {
+      return 'Loading analytics...';
+    }
+
+    return this.errorMessage || this.message;
+  }
+
+  get loadButtonText(): string {
+    return this.isLoading ? 'Loading' : 'Load';
+  }
+
+  get gapNote(): string {
+    if (this.demandGap > 0) {
+      return 'Demand is higher than availability';
+    }
+
+    if (this.demandGap < 0) {
+      return 'Availability is higher than demand';
+    }
+
+    return 'Demand matches availability';
+  }
 
   get availableTotal(): number {
     let total = 0;
@@ -80,21 +104,9 @@ export class AnalyticsPageComponent implements OnInit {
       this.scheduleRuns = await this.schedulingApi.loadScheduleRuns();
       this.message = 'Analytics loaded';
     } catch (error) {
-      this.errorMessage = this.errorText(error);
+      this.errorMessage = apiErrorMessage(error);
     } finally {
       this.isLoading = false;
     }
-  }
-
-  private errorText(error: unknown): string {
-    if (error instanceof HttpErrorResponse) {
-      if (typeof error.error?.detail === 'string') {
-        return error.error.detail;
-      }
-
-      return `Request failed with status ${error.status}.`;
-    }
-
-    return 'Request failed';
   }
 }

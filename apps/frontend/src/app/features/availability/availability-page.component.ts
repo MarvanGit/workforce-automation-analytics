@@ -1,8 +1,8 @@
 import { CommonModule } from '@angular/common';
-import { HttpErrorResponse } from '@angular/common/http';
 import { Component, OnInit, inject } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 
+import { apiErrorMessage } from '../../core/api/api-error-message';
 import {
   AvailabilityDaySummary,
   SchedulingApiService
@@ -22,6 +22,18 @@ export class AvailabilityPageComponent implements OnInit {
   isLoading = false;
   message = 'Ready';
   errorMessage = '';
+
+  get statusText(): string {
+    if (this.isLoading) {
+      return 'Loading availability...';
+    }
+
+    return this.errorMessage || this.message;
+  }
+
+  get loadButtonText(): string {
+    return this.isLoading ? 'Loading' : 'Load';
+  }
 
   get availableTotal(): number {
     let total = 0;
@@ -65,21 +77,9 @@ export class AvailabilityPageComponent implements OnInit {
       this.days = await this.schedulingApi.loadAvailabilitySummary(this.weekStart);
       this.message = 'Availability loaded';
     } catch (error) {
-      this.errorMessage = this.errorText(error);
+      this.errorMessage = apiErrorMessage(error);
     } finally {
       this.isLoading = false;
     }
-  }
-
-  private errorText(error: unknown): string {
-    if (error instanceof HttpErrorResponse) {
-      if (typeof error.error?.detail === 'string') {
-        return error.error.detail;
-      }
-
-      return `Request failed with status ${error.status}.`;
-    }
-
-    return 'Request failed';
   }
 }

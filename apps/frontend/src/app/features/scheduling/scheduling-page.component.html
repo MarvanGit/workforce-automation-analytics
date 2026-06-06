@@ -21,13 +21,13 @@
         (click)="refreshPage()"
         [disabled]="isLoading || weekStart === ''"
       >
-        Refresh
+        {{ refreshButtonText }}
       </button>
     </div>
   </div>
 
   <span class="feature-status" [class.error]="errorMessage">
-    {{ errorMessage || message }}
+    {{ statusText }}
   </span>
 
   <div class="feature-workspace">
@@ -57,7 +57,7 @@
           class="feature-button secondary"
           [disabled]="!canCreateTemplate"
         >
-          Create
+          {{ createTemplateButtonText }}
         </button>
       </form>
     </section>
@@ -107,7 +107,7 @@
           />
         </label>
         <button type="submit" class="feature-button" [disabled]="!canCreateDemand">
-          Add Demand
+          {{ demandButtonText }}
         </button>
       </form>
     </section>
@@ -171,7 +171,7 @@
           (click)="previewSchedule()"
           [disabled]="!canPreviewSchedule"
         >
-          Preview
+          {{ previewButtonText }}
         </button>
         <button
           type="button"
@@ -179,9 +179,13 @@
           (click)="saveScheduleRun()"
           [disabled]="!canSaveScheduleRun"
         >
-          Save
+          {{ saveButtonText }}
         </button>
       </div>
+    </div>
+
+    <div class="feature-warning-list" *ngIf="schedulePreview?.warnings?.length">
+      <p *ngFor="let warning of schedulePreview?.warnings">{{ warning }}</p>
     </div>
 
     <div class="feature-board" *ngIf="schedulePreview">
@@ -226,6 +230,7 @@
           type="button"
           class="feature-row feature-button secondary"
           *ngFor="let run of scheduleRuns"
+          [class.active]="selectedRun?.id === run.id"
           (click)="openScheduleRun(run.id)"
         >
           <span>{{ run.start_date }}</span>
@@ -242,6 +247,9 @@
           </div>
           <strong>{{ shift.start_datetime | date: 'HH:mm' }}</strong>
         </article>
+        <p class="feature-empty" *ngIf="selectedRun.scheduled_shifts.length === 0">
+          This run has no saved shifts.
+        </p>
       </div>
     </div>
   </section>
