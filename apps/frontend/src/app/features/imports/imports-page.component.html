@@ -1,0 +1,72 @@
+<section class="feature-page">
+  <div class="feature-header">
+    <div>
+      <p class="feature-eyebrow">Google Sheets</p>
+      <h2 class="feature-title">Imports</h2>
+    </div>
+
+    <div class="feature-actions">
+      <label class="feature-label">
+        Week
+        <input class="feature-input" type="date" [(ngModel)]="weekStart" />
+      </label>
+      <button
+        type="button"
+        class="feature-button secondary"
+        (click)="refreshPage()"
+        [disabled]="isLoading || weekStart === ''"
+      >
+        Refresh
+      </button>
+      <button
+        type="button"
+        class="feature-button"
+        (click)="importAvailability()"
+        [disabled]="isLoading || weekStart === ''"
+      >
+        Import
+      </button>
+    </div>
+  </div>
+
+  <span class="feature-status" [class.error]="errorMessage">
+    {{ errorMessage || message }}
+  </span>
+
+  <div class="feature-grid">
+    <article class="feature-card">
+      <p class="feature-card-label">Employees</p>
+      <p class="feature-card-value">{{ employees.length }}</p>
+      <p class="feature-card-note">Stored records</p>
+    </article>
+
+    <article class="feature-card">
+      <p class="feature-card-label">Availability</p>
+      <p class="feature-card-value">{{ totalAvailableEmployees }}</p>
+      <p class="feature-card-note">Available day entries</p>
+    </article>
+  </div>
+
+  <section class="feature-panel">
+    <div class="feature-panel-header">
+      <div>
+        <h3>Imported Availability</h3>
+        <p>{{ weekStart }}</p>
+      </div>
+    </div>
+
+    <div class="feature-list">
+      <article class="feature-row" *ngFor="let day of availabilityDays">
+        <div>
+          <p>{{ day.weekday }}</p>
+          <span>{{ day.work_date }}</span>
+        </div>
+        <strong>{{ day.available_employee_count }}</strong>
+      </article>
+
+      <p class="feature-empty" *ngIf="availabilityDays.length === 0">
+        No availability records found.
+      </p>
+    </div>
+  </section>
+</section>

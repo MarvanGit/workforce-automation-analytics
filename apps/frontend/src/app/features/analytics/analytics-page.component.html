@@ -1,0 +1,97 @@
+<section class="feature-page">
+  <div class="feature-header">
+    <div>
+      <p class="feature-eyebrow">Weekly Metrics</p>
+      <h2 class="feature-title">Analytics</h2>
+    </div>
+
+    <div class="feature-actions">
+      <label class="feature-label">
+        Week
+        <input class="feature-input" type="date" [(ngModel)]="weekStart" />
+      </label>
+      <button
+        type="button"
+        class="feature-button"
+        (click)="loadAnalytics()"
+        [disabled]="isLoading || weekStart === ''"
+      >
+        Load
+      </button>
+    </div>
+  </div>
+
+  <span class="feature-status" [class.error]="errorMessage">
+    {{ errorMessage || message }}
+  </span>
+
+  <div class="feature-grid">
+    <article class="feature-card">
+      <p class="feature-card-label">Employees</p>
+      <p class="feature-card-value">{{ employees.length }}</p>
+      <p class="feature-card-note">Stored records</p>
+    </article>
+
+    <article class="feature-card">
+      <p class="feature-card-label">Availability</p>
+      <p class="feature-card-value">{{ availableTotal }}</p>
+      <p class="feature-card-note">Employee day count</p>
+    </article>
+
+    <article class="feature-card">
+      <p class="feature-card-label">Demand</p>
+      <p class="feature-card-value">{{ demandTotal }}</p>
+      <p class="feature-card-note">Required employee count</p>
+    </article>
+
+    <article class="feature-card">
+      <p class="feature-card-label">Gap</p>
+      <p class="feature-card-value">{{ demandGap }}</p>
+      <p class="feature-card-note">Demand minus availability</p>
+    </article>
+  </div>
+
+  <div class="feature-workspace">
+    <section class="feature-panel">
+      <div class="feature-panel-header">
+        <div>
+          <h3>Daily Availability</h3>
+          <p>{{ availableHours }} available hours</p>
+        </div>
+      </div>
+
+      <div class="feature-list">
+        <article class="feature-row" *ngFor="let day of availabilityDays">
+          <div>
+            <p>{{ day.weekday }}</p>
+            <span>{{ day.work_date }}</span>
+          </div>
+          <strong>{{ day.available_employee_count }}</strong>
+        </article>
+        <p class="feature-empty" *ngIf="availabilityDays.length === 0">
+          No availability records found.
+        </p>
+      </div>
+    </section>
+
+    <section class="feature-panel">
+      <div class="feature-panel-header">
+        <div>
+          <h3>Saved Runs</h3>
+          <p>{{ scheduleRuns.length }} stored</p>
+        </div>
+      </div>
+
+      <div class="feature-list">
+        <article class="feature-row" *ngFor="let run of scheduleRuns">
+          <div>
+            <p>{{ run.start_date }}</p>
+            <span>{{ run.end_date }}</span>
+          </div>
+          <strong>{{ run.status }}</strong>
+        </article>
+        <p class="feature-empty" *ngIf="scheduleRuns.length === 0">No saved runs.</p>
+      </div>
+    </section>
+  </div>
+</section>
