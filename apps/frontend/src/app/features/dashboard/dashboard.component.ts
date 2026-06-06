@@ -17,8 +17,6 @@ import {
 interface WeeklyDemandDay {
   name: string;
   date: string;
-  enabled: boolean;
-  requiredEmployeeCount: number;
 }
 
 @Component({
@@ -45,6 +43,8 @@ export class DashboardComponent implements OnInit {
   shiftEnd = '17:00';
   selectedTemplateId = '';
   weeklyDemandDays = this.buildWeeklyDemandDays(this.weekStart);
+  selectedDemandDate = this.weekStart;
+  requiredEmployeeCount = 1;
 
   employees: EmployeeResponse[] = [];
   availabilityDays: AvailabilityDaySummary[] = [];
@@ -78,12 +78,28 @@ export class DashboardComponent implements OnInit {
     return this.schedulePreview?.warnings.length ?? 0;
   }
 
+  get hasAvailabilityData(): boolean {
+    return this.availabilityDays.some((day) => day.available_employee_count > 0);
+  }
+
+  get hasShiftDemand(): boolean {
+    return this.shiftDemand.length > 0;
+  }
+
+  get hasSchedulePreview(): boolean {
+    return this.schedulePreview !== null && this.schedulePreview.shift_count > 0;
+  }
+
   get statusText(): string {
     if (this.isLoading) {
       return `Working on ${this.activeAction}...`;
     }
 
     return this.errorMessage || this.message;
+  }
+
+  get canImportAvailability(): boolean {
+    return !this.isLoading && this.weekStart !== '';
   }
 
   get canCreateTemplate(): boolean {
@@ -101,16 +117,67 @@ export class DashboardComponent implements OnInit {
       !this.isLoading &&
       this.weekStart !== '' &&
       this.selectedTemplateId !== '' &&
-      this.hasSelectedDemandDay()
+      this.selectedDemandDate !== '' &&
+      this.requiredEmployeeCount > 0 &&
+      !this.selectedDemandExists
     );
   }
 
-  get canUseScheduleActions(): boolean {
-    return !this.isLoading && this.weekStart !== '';
+  get canPreviewSchedule(): boolean {
+    return (
+      !this.isLoading &&
+      this.weekStart !== '' &&
+      this.hasAvailabilityData &&
+      this.hasShiftDemand
+    );
   }
 
   get canSaveScheduleRun(): boolean {
-    return this.canUseScheduleActions && this.schedulePreview !== null;
+    return !this.isLoading && this.hasSchedulePreview;
+  }
+
+  get demandButtonText(): string {
+    if (this.selectedTemplateId === '') {
+      return 'Choose Template';
+    }
+
+    if (this.selectedDemandDate === '') {
+      return 'Choose Day';
+    }
+
+    if (this.requiredEmployeeCount <= 0) {
+      return 'Enter Need';
+    }
+
+    if (this.selectedDemandExists) {
+      return 'Demand Exists';
+    }
+
+    return 'Add Demand';
+  }
+
+  get previewButtonText(): string {
+    if (!this.hasAvailabilityData) {
+      return 'Need Availability';
+    }
+
+    if (!this.hasShiftDemand) {
+      return 'Need Demand';
+    }
+
+    return 'Preview';
+  }
+
+  get saveButtonText(): string {
+    if (!this.hasSchedulePreview) {
+      return 'Preview First';
+    }
+
+    return 'Save';
+  }
+
+  get selectedDemandExists(): boolean {
+    return this.demandExists(this.selectedDemandDate, this.selectedTemplateId);
   }
 
   async ngOnInit(): Promise<void> {
@@ -136,7 +203,9 @@ export class DashboardComponent implements OnInit {
   async importAvailability(): Promise<void> {
     await this.runAction('importing availability', 'Availability imported', async () => {
       await this.schedulingApi.importAvailability(this.weekStart);
+      this.employees = await this.schedulingApi.loadEmployees();
       await this.loadAvailabilitySummary();
+      this.schedulePreview = null;
     });
   }
 
@@ -154,16 +223,12 @@ export class DashboardComponent implements OnInit {
   }
 
   async createShiftDemand(): Promise<void> {
-    await this.runAction('creating weekly demand', 'Weekly demand created', async () => {
-      for (const day of this.weeklyDemandDays) {
-        if (day.enabled && day.requiredEmployeeCount > 0) {
-          await this.schedulingApi.createShiftDemand(
-            day.date,
-            this.selectedTemplateId,
-            day.requiredEmployeeCount
-          );
-        }
-      }
+    await this.runAction('creating demand', 'Demand created', async () => {
+      await this.schedulingApi.createShiftDemand(
+        this.selectedDemandDate,
+        this.selectedTemplateId,
+        this.requiredEmployeeCount
+      );
 
       await this.loadShiftDemand();
       this.schedulePreview = null;
@@ -203,9 +268,14 @@ export class DashboardComponent implements OnInit {
     this.shiftEnd = shift.end;
   }
 
+  demandExistsForDate(demandDate: string): boolean {
+    return this.demandExists(demandDate, this.selectedTemplateId);
+  }
+
   changeWeekStart(value: string): void {
     this.weekStart = value;
     this.weeklyDemandDays = this.buildWeeklyDemandDays(value);
+    this.selectedDemandDate = this.weeklyDemandDays[0]?.date || '';
     this.schedulePreview = null;
     this.selectedRun = null;
   }
@@ -238,15 +308,15 @@ export class DashboardComponent implements OnInit {
   private async runAction(
     activeAction: string,
     message: string,
-    action: () => Promise<void>
+    action: () => Promise<string | void>
   ): Promise<void> {
     this.isLoading = true;
     this.activeAction = activeAction;
     this.errorMessage = '';
 
     try {
-      await action();
-      this.message = message;
+      const actionMessage = await action();
+      this.message = actionMessage || message;
     } catch (error) {
       this.updateBackendStatusAfterError(error);
       this.errorMessage = this.errorText(error);
@@ -313,9 +383,12 @@ export class DashboardComponent implements OnInit {
     );
   }
 
-  private hasSelectedDemandDay(): boolean {
-    for (const day of this.weeklyDemandDays) {
-      if (day.enabled && day.requiredEmployeeCount > 0) {
+  private demandExists(demandDate: string, shiftTemplateId: string): boolean {
+    for (const demand of this.shiftDemand) {
+      if (
+        demand.demand_date === demandDate &&
+        demand.shift_template_id === shiftTemplateId
+      ) {
         return true;
       }
     }
@@ -333,9 +406,7 @@ export class DashboardComponent implements OnInit {
     for (let index = 0; index < this.weekdayNames.length; index++) {
       days.push({
         name: this.weekdayNames[index],
-        date: this.addDays(weekStart, index),
-        enabled: true,
-        requiredEmployeeCount: 1
+        date: this.addDays(weekStart, index)
       });
     }
 

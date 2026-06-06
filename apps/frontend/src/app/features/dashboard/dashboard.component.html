@@ -18,7 +18,7 @@
         type="button"
         class="button secondary"
         (click)="refreshDashboard()"
-        [disabled]="isLoading || weekStart === ''"
+        [disabled]="!canImportAvailability"
       >
         {{ isLoading ? 'Loading' : 'Refresh' }}
       </button>
@@ -26,7 +26,7 @@
         type="button"
         class="button"
         (click)="importAvailability()"
-        [disabled]="isLoading || weekStart === ''"
+        [disabled]="!canImportAvailability"
       >
         {{ isLoading ? 'Working' : 'Import' }}
       </button>
@@ -72,6 +72,13 @@
     </article>
   </div>
 
+  <div class="workflow-strip">
+    <span [class.ready]="hasAvailabilityData">Availability</span>
+    <span [class.ready]="hasShiftDemand">Demand</span>
+    <span [class.ready]="hasSchedulePreview">Preview</span>
+    <span [class.ready]="scheduleRuns.length > 0">Saved Runs</span>
+  </div>
+
   <div class="workspace-grid">
     <section class="panel planner-panel">
       <div class="panel-header">
@@ -110,7 +117,7 @@
         </button>
       </form>
 
-      <form class="weekly-demand-form" (ngSubmit)="createShiftDemand()">
+      <form class="demand-form" (ngSubmit)="createShiftDemand()">
         <label>
           Template
           <select name="selectedTemplateId" [(ngModel)]="selectedTemplateId">
@@ -121,29 +128,29 @@
           </select>
         </label>
 
-        <div class="weekly-demand-grid">
-          <label class="weekday-demand" *ngFor="let day of weeklyDemandDays">
-            <span class="weekday-title">
-              <input
-                type="checkbox"
-                name="demandEnabled{{ day.name }}"
-                [(ngModel)]="day.enabled"
-              />
-              <span>{{ day.name }}</span>
-              <small>{{ day.date }}</small>
-            </span>
-            <input
-              type="number"
-              min="1"
-              name="demandCount{{ day.name }}"
-              [(ngModel)]="day.requiredEmployeeCount"
-              [disabled]="!day.enabled"
-            />
-          </label>
-        </div>
+        <label>
+          Day
+          <select name="selectedDemandDate" [(ngModel)]="selectedDemandDate">
+            <option value="">Choose day</option>
+            <option *ngFor="let day of weeklyDemandDays" [value]="day.date">
+              {{ day.name }} - {{ day.date }}
+              {{ demandExistsForDate(day.date) ? '(exists)' : '' }}
+            </option>
+          </select>
+        </label>
+
+        <label>
+          Needed
+          <input
+            type="number"
+            min="1"
+            name="requiredEmployeeCount"
+            [(ngModel)]="requiredEmployeeCount"
+          />
+        </label>
 
         <button type="submit" class="button" [disabled]="!canCreateWeeklyDemand">
-          Add Weekly Demand
+          {{ demandButtonText }}
         </button>
       </form>
 
@@ -199,6 +206,9 @@
           </div>
           <strong>{{ day.available_employee_count }}</strong>
         </div>
+        <p class="empty-state" *ngIf="availabilityDays.length === 0">
+          No availability loaded for this week.
+        </p>
       </div>
     </section>
   </div>
@@ -215,9 +225,9 @@
             type="button"
             class="button secondary"
             (click)="previewSchedule()"
-            [disabled]="!canUseScheduleActions"
+            [disabled]="!canPreviewSchedule"
           >
-            Preview
+            {{ previewButtonText }}
           </button>
           <button
             type="button"
@@ -225,7 +235,7 @@
             (click)="saveScheduleRun()"
             [disabled]="!canSaveScheduleRun"
           >
-            Save
+            {{ saveButtonText }}
           </button>
         </div>
       </div>
@@ -250,6 +260,9 @@
           </div>
         </article>
         <p class="empty-state" *ngIf="!schedulePreview">No preview loaded.</p>
+        <p class="empty-state" *ngIf="schedulePreview && schedulePreview.shifts.length === 0">
+          No shifts found for this preview.
+        </p>
       </div>
     </section>
 
@@ -262,7 +275,13 @@
       </div>
 
       <div class="run-list">
-        <button type="button" class="run-row" *ngFor="let run of scheduleRuns" (click)="openScheduleRun(run.id)">
+        <button
+          type="button"
+          class="run-row"
+          *ngFor="let run of scheduleRuns"
+          [class.active]="selectedRun?.id === run.id"
+          (click)="openScheduleRun(run.id)"
+        >
           <span>{{ run.start_date }}</span>
           <strong>{{ run.status }}</strong>
         </button>
