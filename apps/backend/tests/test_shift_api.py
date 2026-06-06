@@ -279,6 +279,49 @@ def test_create_shift_demand_returns_validation_error(monkeypatch) -> None:
     assert response.json()["detail"] == "shift_template_id was not found."
 
 
+def test_delete_shift_demand_returns_no_content(monkeypatch) -> None:
+    async def fake_delete_shift_demand(db, demand_id):
+        assert demand_id == "demand-1"
+        return True
+
+    monkeypatch.setattr(
+        shifts_api,
+        "delete_shift_demand",
+        fake_delete_shift_demand,
+    )
+    app.dependency_overrides[get_db] = fake_get_db
+
+    try:
+        client = TestClient(app)
+        response = client.delete("/api/v1/shift-demand/demand-1")
+    finally:
+        app.dependency_overrides.clear()
+
+    assert response.status_code == 204
+    assert response.content == b""
+
+
+def test_delete_shift_demand_returns_not_found(monkeypatch) -> None:
+    async def fake_delete_shift_demand(db, demand_id):
+        return False
+
+    monkeypatch.setattr(
+        shifts_api,
+        "delete_shift_demand",
+        fake_delete_shift_demand,
+    )
+    app.dependency_overrides[get_db] = fake_get_db
+
+    try:
+        client = TestClient(app)
+        response = client.delete("/api/v1/shift-demand/missing-demand")
+    finally:
+        app.dependency_overrides.clear()
+
+    assert response.status_code == 404
+    assert response.json()["detail"] == "shift demand was not found."
+
+
 def test_get_shift_demand_requires_monday() -> None:
     app.dependency_overrides[get_db] = fake_get_db
 

@@ -86,6 +86,20 @@ async def create_shift_demand(
     )
 
 
+async def delete_shift_demand(
+    session: AsyncSession,
+    demand_id: str,
+) -> bool:
+    demand = await session.get(ShiftDemand, demand_id)
+
+    if demand is None:
+        return False
+
+    await session.delete(demand)
+    await session.commit()
+    return True
+
+
 async def _find_shift_template_by_name(
     session: AsyncSession,
     name: str,

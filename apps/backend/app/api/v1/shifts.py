@@ -17,7 +17,11 @@ from app.schemas.shifts import (
     build_shift_templates_response,
 )
 from app.services.shift_queries import list_shift_templates, list_week_shift_demand
-from app.services.shift_storage import create_shift_demand, create_shift_template
+from app.services.shift_storage import (
+    create_shift_demand,
+    create_shift_template,
+    delete_shift_demand,
+)
 
 router = APIRouter(tags=["shifts"])
 DB_SESSION = Depends(get_db)
@@ -87,3 +91,14 @@ async def post_shift_demand(
         raise HTTPException(status_code=400, detail=str(error)) from error
 
     return build_shift_demand_response(row)
+
+
+@router.delete("/shift-demand/{demand_id}", status_code=status.HTTP_204_NO_CONTENT)
+async def delete_shift_demand_row(
+    demand_id: str,
+    db: AsyncSession = DB_SESSION,
+) -> None:
+    deleted = await delete_shift_demand(db, demand_id)
+
+    if not deleted:
+        raise HTTPException(status_code=404, detail="shift demand was not found.")
