@@ -56,6 +56,13 @@ select {
   padding: 0 11px;
 }
 
+input[type='checkbox'] {
+  width: 16px;
+  min-height: 16px;
+  padding: 0;
+  accent-color: #5e6ad2;
+}
+
 input:focus,
 select:focus {
   outline: 2px solid #5e6ad2;
@@ -194,6 +201,7 @@ select:focus {
 
 .quick-shifts,
 .form-grid,
+.weekly-demand-form,
 .availability-list,
 .schedule-list,
 .run-list {
@@ -221,9 +229,44 @@ select:focus {
   align-items: end;
 }
 
-.demand-form {
-  grid-template-columns: minmax(220px, 1fr) 120px auto;
+.weekly-demand-form {
   margin-top: 12px;
+}
+
+.weekly-demand-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.weekday-demand {
+  border: 1px solid #1d1f24;
+  border-radius: 6px;
+  background: #101114;
+  padding: 10px;
+}
+
+.weekday-title {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  align-items: center;
+  gap: 4px 8px;
+  color: #f7f8f8;
+  font-size: 0.84rem;
+}
+
+.weekday-title small {
+  grid-column: 2;
+  color: #8a8f98;
+  font-size: 0.75rem;
+}
+
+.weekday-demand input[type='number'] {
+  margin-top: 10px;
+}
+
+.weekly-demand-form .button {
+  justify-self: start;
 }
 
 .table-wrap {
@@ -375,7 +418,7 @@ td {
   .metric-grid,
   .workspace-grid,
   .form-grid,
-  .demand-form {
+  .weekly-demand-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
@@ -394,7 +437,7 @@ td {
   .workspace-grid,
   .quick-shifts,
   .form-grid,
-  .demand-form {
+  .weekly-demand-grid {
     grid-template-columns: 1fr;
   }
 

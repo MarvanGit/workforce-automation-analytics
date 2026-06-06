@@ -8,7 +8,11 @@
     <div class="week-controls">
       <label>
         Week
-        <input type="date" [(ngModel)]="weekStart" />
+        <input
+          type="date"
+          [ngModel]="weekStart"
+          (ngModelChange)="changeWeekStart($event)"
+        />
       </label>
       <button
         type="button"
@@ -103,7 +107,7 @@
         </button>
       </form>
 
-      <form class="form-grid demand-form" (ngSubmit)="createShiftDemand()">
+      <form class="weekly-demand-form" (ngSubmit)="createShiftDemand()">
         <label>
           Template
           <select name="selectedTemplateId" [(ngModel)]="selectedTemplateId">
@@ -113,12 +117,30 @@
             </option>
           </select>
         </label>
-        <label>
-          Needed
-          <input type="number" min="1" name="requiredEmployeeCount" [(ngModel)]="requiredEmployeeCount" />
-        </label>
-        <button type="submit" class="button" [disabled]="!canCreateDemand">
-          Add Demand
+
+        <div class="weekly-demand-grid">
+          <label class="weekday-demand" *ngFor="let day of weeklyDemandDays">
+            <span class="weekday-title">
+              <input
+                type="checkbox"
+                name="demandEnabled{{ day.name }}"
+                [(ngModel)]="day.enabled"
+              />
+              <span>{{ day.name }}</span>
+              <small>{{ day.date }}</small>
+            </span>
+            <input
+              type="number"
+              min="1"
+              name="demandCount{{ day.name }}"
+              [(ngModel)]="day.requiredEmployeeCount"
+              [disabled]="!day.enabled"
+            />
+          </label>
+        </div>
+
+        <button type="submit" class="button" [disabled]="!canCreateWeeklyDemand">
+          Add Weekly Demand
         </button>
       </form>
 
@@ -127,6 +149,7 @@
           <thead>
             <tr>
               <th>Day</th>
+              <th>Date</th>
               <th>Shift</th>
               <th>Need</th>
             </tr>
@@ -134,11 +157,12 @@
           <tbody>
             <tr *ngFor="let demand of shiftDemand">
               <td>{{ demand.weekday }}</td>
+              <td>{{ demand.demand_date }}</td>
               <td>{{ demand.shift_template_name }}</td>
               <td>{{ demand.required_employee_count }}</td>
             </tr>
             <tr *ngIf="shiftDemand.length === 0">
-              <td colspan="3">No demand for this week.</td>
+              <td colspan="4">No demand for this week.</td>
             </tr>
           </tbody>
         </table>

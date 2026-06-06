@@ -152,12 +152,12 @@ export class SchedulingApiService {
   }
 
   async createShiftDemand(
-    weekStart: string,
+    demandDate: string,
     shiftTemplateId: string,
     requiredEmployeeCount: number
   ): Promise<void> {
     await this.post('/shift-demand', {
-      demand_date: weekStart,
+      demand_date: demandDate,
       shift_template_id: shiftTemplateId,
       required_employee_count: requiredEmployeeCount,
       notes: null
