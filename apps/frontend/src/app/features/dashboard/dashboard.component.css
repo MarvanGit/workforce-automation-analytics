@@ -71,6 +71,7 @@ select:focus {
 
 .button,
 .chip,
+.link-button,
 .run-row {
   border: 0;
   cursor: pointer;
@@ -93,6 +94,23 @@ select:focus {
 }
 
 .button:disabled {
+  cursor: not-allowed;
+  opacity: 0.55;
+}
+
+.link-button {
+  background: transparent;
+  color: #a8b0ff;
+  padding: 0;
+  font-size: 0.82rem;
+  font-weight: 650;
+}
+
+.link-button.danger {
+  color: #ffb4b8;
+}
+
+.link-button:disabled {
   cursor: not-allowed;
   opacity: 0.55;
 }
@@ -277,7 +295,7 @@ select:focus {
 table {
   width: 100%;
   border-collapse: collapse;
-  min-width: 420px;
+  min-width: 520px;
 }
 
 th,
@@ -295,6 +313,11 @@ th {
 
 td {
   color: #e5e7eb;
+}
+
+.table-action {
+  text-align: right;
+  white-space: nowrap;
 }
 
 .availability-list {

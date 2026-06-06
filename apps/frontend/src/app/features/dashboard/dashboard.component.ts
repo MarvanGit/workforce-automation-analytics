@@ -163,6 +163,15 @@ export class DashboardComponent implements OnInit {
       }
 
       await this.loadShiftDemand();
+      this.schedulePreview = null;
+    });
+  }
+
+  async deleteShiftDemand(demand: ShiftDemandResponse): Promise<void> {
+    await this.runAction('deleting shift demand', 'Shift demand deleted', async () => {
+      await this.schedulingApi.deleteShiftDemand(demand.id);
+      await this.loadShiftDemand();
+      this.schedulePreview = null;
     });
   }
 

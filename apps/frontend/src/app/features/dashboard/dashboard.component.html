@@ -152,6 +152,7 @@
               <th>Date</th>
               <th>Shift</th>
               <th>Need</th>
+              <th></th>
             </tr>
           </thead>
           <tbody>
@@ -160,9 +161,19 @@
               <td>{{ demand.demand_date }}</td>
               <td>{{ demand.shift_template_name }}</td>
               <td>{{ demand.required_employee_count }}</td>
+              <td class="table-action">
+                <button
+                  type="button"
+                  class="link-button danger"
+                  (click)="deleteShiftDemand(demand)"
+                  [disabled]="isLoading"
+                >
+                  Remove
+                </button>
+              </td>
             </tr>
             <tr *ngIf="shiftDemand.length === 0">
-              <td colspan="4">No demand for this week.</td>
+              <td colspan="5">No demand for this week.</td>
             </tr>
           </tbody>
         </table>
