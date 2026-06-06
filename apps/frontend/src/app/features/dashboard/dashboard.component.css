@@ -116,6 +116,9 @@ select:focus {
 }
 
 .status-row {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
   min-height: 32px;
 }
 
@@ -142,6 +145,18 @@ select:focus {
   border-color: #3a3d78;
   background: #17193a;
   color: #d7dbff;
+}
+
+.status-pill.connection {
+  border-color: #24371f;
+  background: #101a0e;
+  color: #b8e3a8;
+}
+
+.status-pill.connection.error {
+  border-color: #5f2528;
+  background: #211113;
+  color: #ffb4b8;
 }
 
 .metric-grid,

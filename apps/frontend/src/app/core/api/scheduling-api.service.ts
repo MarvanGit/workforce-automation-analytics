@@ -4,6 +4,12 @@ import { firstValueFrom } from 'rxjs';
 
 import { API_BASE_URL } from './api.config';
 
+export interface HealthResponse {
+  status: string;
+  service: string;
+  environment: string;
+}
+
 export interface EmployeeResponse {
   id: string;
   employee_code: string;
@@ -113,6 +119,10 @@ interface ScheduleRunsResponse {
 })
 export class SchedulingApiService {
   private readonly http = inject(HttpClient);
+
+  async checkHealth(): Promise<HealthResponse> {
+    return this.get<HealthResponse>('/health');
+  }
 
   async loadEmployees(): Promise<EmployeeResponse[]> {
     const response = await this.get<EmployeesResponse>('/employees');
