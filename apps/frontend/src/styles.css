@@ -283,6 +283,22 @@ select {
   text-align: right;
 }
 
+.feature-warning-list {
+  display: grid;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.feature-warning-list p {
+  margin: 0;
+  border: 1px solid #3f2a12;
+  border-radius: 6px;
+  background: #1b140d;
+  color: #e8c58b;
+  padding: 10px;
+  font-size: 0.82rem;
+}
+
 .feature-empty {
   border: 1px dashed #303238;
   border-radius: 6px;
@@ -338,6 +354,10 @@ select {
 .feature-chip-list .missing {
   background: #2a1518;
   color: #ffb4b8;
+}
+
+.feature-row.active {
+  border-color: #3a3d78;
 }
 
 @media (max-width: 1100px) {

@@ -16,7 +16,7 @@
         (click)="refreshPage()"
         [disabled]="isLoading || weekStart === ''"
       >
-        Refresh
+        {{ refreshButtonText }}
       </button>
       <button
         type="button"
@@ -24,13 +24,13 @@
         (click)="importAvailability()"
         [disabled]="isLoading || weekStart === ''"
       >
-        Import
+        {{ importButtonText }}
       </button>
     </div>
   </div>
 
   <span class="feature-status" [class.error]="errorMessage">
-    {{ errorMessage || message }}
+    {{ statusText }}
   </span>
 
   <div class="feature-grid">

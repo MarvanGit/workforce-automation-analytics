@@ -1,8 +1,8 @@
 import { CommonModule } from '@angular/common';
-import { HttpErrorResponse } from '@angular/common/http';
 import { Component, OnInit, inject } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 
+import { apiErrorMessage } from '../../core/api/api-error-message';
 import {
   SavedScheduleRunResponse,
   SchedulePreviewResponse,
@@ -60,6 +60,18 @@ export class SchedulingPageComponent implements OnInit {
   message = 'Ready';
   errorMessage = '';
 
+  get statusText(): string {
+    if (this.isLoading) {
+      return 'Working...';
+    }
+
+    return this.errorMessage || this.message;
+  }
+
+  get refreshButtonText(): string {
+    return this.isLoading ? 'Loading' : 'Refresh';
+  }
+
   get canCreateTemplate(): boolean {
     return (
       !this.isLoading &&
@@ -76,7 +88,7 @@ export class SchedulingPageComponent implements OnInit {
       this.selectedTemplateId !== '' &&
       this.selectedDemandDate !== '' &&
       this.requiredEmployeeCount > 0 &&
-      !this.demandExists(this.selectedDemandDate, this.selectedTemplateId)
+      !this.selectedDemandExists
     );
   }
 
@@ -86,6 +98,46 @@ export class SchedulingPageComponent implements OnInit {
 
   get canSaveScheduleRun(): boolean {
     return !this.isLoading && this.schedulePreview !== null;
+  }
+
+  get selectedDemandExists(): boolean {
+    return this.demandExists(this.selectedDemandDate, this.selectedTemplateId);
+  }
+
+  get createTemplateButtonText(): string {
+    return this.isLoading ? 'Creating' : 'Create';
+  }
+
+  get demandButtonText(): string {
+    if (this.selectedTemplateId === '') {
+      return 'Choose Template';
+    }
+
+    if (this.requiredEmployeeCount <= 0) {
+      return 'Enter Need';
+    }
+
+    if (this.selectedDemandExists) {
+      return 'Demand Exists';
+    }
+
+    return this.isLoading ? 'Adding' : 'Add Demand';
+  }
+
+  get previewButtonText(): string {
+    if (this.shiftDemand.length === 0) {
+      return 'Need Demand';
+    }
+
+    return this.isLoading ? 'Previewing' : 'Preview';
+  }
+
+  get saveButtonText(): string {
+    if (this.schedulePreview === null) {
+      return 'Preview First';
+    }
+
+    return this.isLoading ? 'Saving' : 'Save';
   }
 
   get previewBoardDays(): ScheduleBoardDay[] {
@@ -206,7 +258,7 @@ export class SchedulingPageComponent implements OnInit {
       await action();
       this.message = successMessage;
     } catch (error) {
-      this.errorMessage = this.errorText(error);
+      this.errorMessage = apiErrorMessage(error);
     } finally {
       this.isLoading = false;
     }
@@ -276,17 +328,5 @@ export class SchedulingPageComponent implements OnInit {
     const day = String(date.getDate()).padStart(2, '0');
 
     return `${year}-${month}-${day}`;
-  }
-
-  private errorText(error: unknown): string {
-    if (error instanceof HttpErrorResponse) {
-      if (typeof error.error?.detail === 'string') {
-        return error.error.detail;
-      }
-
-      return `Request failed with status ${error.status}.`;
-    }
-
-    return 'Request failed';
   }
 }

@@ -16,13 +16,13 @@
         (click)="loadAvailability()"
         [disabled]="isLoading || weekStart === ''"
       >
-        Load
+        {{ loadButtonText }}
       </button>
     </div>
   </div>
 
   <span class="feature-status" [class.error]="errorMessage">
-    {{ errorMessage || message }}
+    {{ statusText }}
   </span>
 
   <div class="feature-grid">

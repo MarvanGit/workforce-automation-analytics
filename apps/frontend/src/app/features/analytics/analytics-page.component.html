@@ -16,13 +16,13 @@
         (click)="loadAnalytics()"
         [disabled]="isLoading || weekStart === ''"
       >
-        Load
+        {{ loadButtonText }}
       </button>
     </div>
   </div>
 
   <span class="feature-status" [class.error]="errorMessage">
-    {{ errorMessage || message }}
+    {{ statusText }}
   </span>
 
   <div class="feature-grid">
@@ -47,7 +47,7 @@
     <article class="feature-card">
       <p class="feature-card-label">Gap</p>
       <p class="feature-card-value">{{ demandGap }}</p>
-      <p class="feature-card-note">Demand minus availability</p>
+      <p class="feature-card-note">{{ gapNote }}</p>
     </article>
   </div>
 
