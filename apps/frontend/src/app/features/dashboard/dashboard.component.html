@@ -244,26 +244,36 @@
         <p *ngFor="let warning of schedulePreview?.warnings">{{ warning }}</p>
       </div>
 
-      <div class="schedule-list">
-        <article class="shift-row" *ngFor="let shift of schedulePreview?.shifts">
-          <div>
-            <p>{{ shift.weekday }} - {{ shift.shift_template_name }}</p>
-            <span>{{ shift.shift_start_time }}-{{ shift.shift_end_time }}</span>
+      <div class="schedule-board" *ngIf="schedulePreview">
+        <article class="board-day" *ngFor="let day of previewBoardDays">
+          <div class="board-day-header">
+            <h4>{{ day.name }}</h4>
+            <span>{{ day.date }}</span>
           </div>
-          <div class="assigned-list">
-            <span *ngFor="let employee of shift.assigned_employees">
-              {{ employee.employee_code }}
-            </span>
-            <span class="missing" *ngIf="shift.missing_employee_count > 0">
-              Missing {{ shift.missing_employee_count }}
-            </span>
+
+          <div class="board-shifts">
+            <div class="board-shift" *ngFor="let shift of day.shifts">
+              <p>{{ shift.shift_template_name }}</p>
+              <span>{{ shift.shift_start_time }}-{{ shift.shift_end_time }}</span>
+
+              <div class="assigned-list">
+                <span *ngFor="let employee of shift.assigned_employees">
+                  {{ employee.employee_code }}
+                </span>
+                <span class="missing" *ngIf="shift.missing_employee_count > 0">
+                  Missing {{ shift.missing_employee_count }}
+                </span>
+              </div>
+            </div>
+
+            <p class="board-empty" *ngIf="day.shifts.length === 0">No shifts</p>
           </div>
         </article>
-        <p class="empty-state" *ngIf="!schedulePreview">No preview loaded.</p>
-        <p class="empty-state" *ngIf="schedulePreview && schedulePreview.shifts.length === 0">
-          No shifts found for this preview.
-        </p>
       </div>
+      <p class="empty-state" *ngIf="!schedulePreview">No preview loaded.</p>
+      <p class="empty-state" *ngIf="schedulePreview && schedulePreview.shifts.length === 0">
+        No shifts found for this preview.
+      </p>
     </section>
 
     <section class="panel">
@@ -291,9 +301,29 @@
       <div class="selected-run" *ngIf="selectedRun">
         <h4>{{ selectedRun.start_date }} to {{ selectedRun.end_date }}</h4>
         <p>{{ selectedRun.scheduled_shift_count }} saved shifts</p>
-        <div class="saved-shift" *ngFor="let shift of selectedRun.scheduled_shifts">
-          <span>{{ shift.employee_code }} - {{ shift.shift_template_name }}</span>
-          <strong>{{ shift.shift_date }}</strong>
+
+        <div class="schedule-board saved-board">
+          <article class="board-day" *ngFor="let day of savedRunBoardDays">
+            <div class="board-day-header">
+              <h4>{{ day.name }}</h4>
+              <span>{{ day.date }}</span>
+            </div>
+
+            <div class="board-shifts">
+              <div class="board-shift" *ngFor="let shift of day.shifts">
+                <p>{{ shift.shiftTemplateName }}</p>
+                <span>{{ savedShiftTime(shift) }}</span>
+
+                <div class="assigned-list">
+                  <span *ngFor="let employeeCode of shift.employeeCodes">
+                    {{ employeeCode }}
+                  </span>
+                </div>
+              </div>
+
+              <p class="board-empty" *ngIf="day.shifts.length === 0">No shifts</p>
+            </div>
+          </article>
         </div>
       </div>
     </section>

@@ -56,13 +56,6 @@ select {
   padding: 0 11px;
 }
 
-input[type='checkbox'] {
-  width: 16px;
-  min-height: 16px;
-  padding: 0;
-  accent-color: #5e6ad2;
-}
-
 input:focus,
 select:focus {
   outline: 2px solid #5e6ad2;
@@ -204,7 +197,6 @@ select:focus {
 .metric-note,
 .panel-header p,
 .day-row span,
-.shift-row span,
 .empty-state,
 .selected-run p {
   color: #8a8f98;
@@ -251,7 +243,6 @@ select:focus {
 .form-grid,
 .demand-form,
 .availability-list,
-.schedule-list,
 .run-list {
   display: grid;
   gap: 10px;
@@ -325,17 +316,13 @@ td {
 }
 
 .day-row,
-.shift-row,
-.run-row,
-.saved-shift {
+.run-row {
   border: 1px solid #1d1f24;
   border-radius: 6px;
   background: #101114;
 }
 
-.day-row,
-.shift-row,
-.saved-shift {
+.day-row {
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -343,8 +330,7 @@ td {
   padding: 10px 12px;
 }
 
-.day-row p,
-.shift-row p {
+.day-row p {
   margin: 0 0 4px;
   color: #f7f8f8;
   font-weight: 580;
@@ -373,20 +359,87 @@ td {
   font-size: 0.82rem;
 }
 
+.schedule-board {
+  display: grid;
+  grid-template-columns: repeat(6, minmax(145px, 1fr));
+  gap: 10px;
+  overflow-x: auto;
+}
+
+.saved-board {
+  margin-top: 12px;
+}
+
+.board-day {
+  border: 1px solid #1d1f24;
+  border-radius: 6px;
+  background: #101114;
+  padding: 10px;
+}
+
+.board-day-header {
+  border-bottom: 1px solid #1d1f24;
+  padding-bottom: 8px;
+}
+
+.board-day-header h4,
+.board-shift p {
+  margin: 0;
+  color: #f7f8f8;
+  font-weight: 650;
+}
+
+.board-day-header h4 {
+  font-size: 0.84rem;
+}
+
+.board-day-header span,
+.board-shift span,
+.board-empty {
+  color: #8a8f98;
+  font-size: 0.76rem;
+}
+
+.board-shifts {
+  display: grid;
+  gap: 8px;
+  margin-top: 10px;
+}
+
+.board-shift {
+  border: 1px solid #24262b;
+  border-radius: 6px;
+  background: #0d0e11;
+  padding: 9px;
+}
+
+.board-shift p {
+  margin-bottom: 4px;
+  font-size: 0.82rem;
+}
+
+.board-empty {
+  margin: 0;
+  border: 1px dashed #303238;
+  border-radius: 6px;
+  padding: 9px;
+}
+
 .assigned-list {
   display: flex;
   gap: 7px;
   flex-wrap: wrap;
-  justify-content: flex-end;
+  justify-content: flex-start;
+  margin-top: 8px;
 }
 
 .assigned-list span {
-  min-height: 24px;
+  min-height: 22px;
   border-radius: 6px;
   background: #24264f;
   color: #c5c9ff;
-  padding: 5px 9px;
-  font-size: 0.78rem;
+  padding: 4px 7px;
+  font-size: 0.72rem;
   font-weight: 650;
 }
 
@@ -430,17 +483,6 @@ td {
   padding-top: 16px;
 }
 
-.saved-shift {
-  margin-top: 8px;
-  color: #e5e5e6;
-  font-size: 0.82rem;
-}
-
-.saved-shift strong {
-  color: #a8b0ff;
-  font-weight: 650;
-}
-
 @media (max-width: 1180px) {
   .metric-grid,
   .workspace-grid,
@@ -454,9 +496,7 @@ td {
 @media (max-width: 760px) {
   .page-header,
   .panel-header,
-  .day-row,
-  .shift-row,
-  .saved-shift {
+  .day-row {
     align-items: stretch;
     flex-direction: column;
   }
@@ -478,9 +518,5 @@ td {
   .button,
   .week-controls label {
     width: 100%;
-  }
-
-  .assigned-list {
-    justify-content: flex-start;
   }
 }
