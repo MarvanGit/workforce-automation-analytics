@@ -7,7 +7,9 @@ import {
   AvailabilityDaySummary,
   EmployeeResponse,
   SavedScheduleRunResponse,
+  SavedScheduledShiftResponse,
   SchedulePreviewResponse,
+  ScheduleShiftPreviewResponse,
   ScheduleRunSummaryResponse,
   SchedulingApiService,
   ShiftDemandResponse,
@@ -17,6 +19,25 @@ import {
 interface WeeklyDemandDay {
   name: string;
   date: string;
+}
+
+interface PreviewBoardDay {
+  name: string;
+  date: string;
+  shifts: ScheduleShiftPreviewResponse[];
+}
+
+interface SavedShiftGroup {
+  shiftTemplateName: string;
+  startDatetime: string;
+  endDatetime: string;
+  employeeCodes: string[];
+}
+
+interface SavedRunBoardDay {
+  name: string;
+  date: string;
+  shifts: SavedShiftGroup[];
 }
 
 @Component({
@@ -180,6 +201,39 @@ export class DashboardComponent implements OnInit {
     return this.demandExists(this.selectedDemandDate, this.selectedTemplateId);
   }
 
+  get previewBoardDays(): PreviewBoardDay[] {
+    const boardDays: PreviewBoardDay[] = [];
+
+    for (const day of this.weeklyDemandDays) {
+      boardDays.push({
+        name: day.name,
+        date: day.date,
+        shifts: this.previewShiftsForDate(day.date)
+      });
+    }
+
+    return boardDays;
+  }
+
+  get savedRunBoardDays(): SavedRunBoardDay[] {
+    if (this.selectedRun === null) {
+      return [];
+    }
+
+    const days = this.buildWeeklyDemandDays(this.selectedRun.start_date);
+    const boardDays: SavedRunBoardDay[] = [];
+
+    for (const day of days) {
+      boardDays.push({
+        name: day.name,
+        date: day.date,
+        shifts: this.savedShiftGroupsForDate(day.date)
+      });
+    }
+
+    return boardDays;
+  }
+
   async ngOnInit(): Promise<void> {
     await this.refreshDashboard();
   }
@@ -270,6 +324,12 @@ export class DashboardComponent implements OnInit {
 
   demandExistsForDate(demandDate: string): boolean {
     return this.demandExists(demandDate, this.selectedTemplateId);
+  }
+
+  savedShiftTime(shift: SavedShiftGroup): string {
+    return `${this.timeFromDateTime(shift.startDatetime)}-${this.timeFromDateTime(
+      shift.endDatetime
+    )}`;
   }
 
   changeWeekStart(value: string): void {
@@ -396,6 +456,74 @@ export class DashboardComponent implements OnInit {
     return false;
   }
 
+  private previewShiftsForDate(demandDate: string): ScheduleShiftPreviewResponse[] {
+    const shifts: ScheduleShiftPreviewResponse[] = [];
+
+    if (this.schedulePreview === null) {
+      return shifts;
+    }
+
+    for (const shift of this.schedulePreview.shifts) {
+      if (shift.demand_date === demandDate) {
+        shifts.push(shift);
+      }
+    }
+
+    return shifts;
+  }
+
+  private savedShiftGroupsForDate(shiftDate: string): SavedShiftGroup[] {
+    const groups: SavedShiftGroup[] = [];
+
+    if (this.selectedRun === null) {
+      return groups;
+    }
+
+    for (const shift of this.selectedRun.scheduled_shifts) {
+      if (shift.shift_date === shiftDate) {
+        this.addSavedShiftToGroup(groups, shift);
+      }
+    }
+
+    return groups;
+  }
+
+  private addSavedShiftToGroup(
+    groups: SavedShiftGroup[],
+    shift: SavedScheduledShiftResponse
+  ): void {
+    const group = this.findSavedShiftGroup(groups, shift);
+
+    if (group !== null) {
+      group.employeeCodes.push(shift.employee_code);
+      return;
+    }
+
+    groups.push({
+      shiftTemplateName: shift.shift_template_name,
+      startDatetime: shift.start_datetime,
+      endDatetime: shift.end_datetime,
+      employeeCodes: [shift.employee_code]
+    });
+  }
+
+  private findSavedShiftGroup(
+    groups: SavedShiftGroup[],
+    shift: SavedScheduledShiftResponse
+  ): SavedShiftGroup | null {
+    for (const group of groups) {
+      if (
+        group.shiftTemplateName === shift.shift_template_name &&
+        group.startDatetime === shift.start_datetime &&
+        group.endDatetime === shift.end_datetime
+      ) {
+        return group;
+      }
+    }
+
+    return null;
+  }
+
   private buildWeeklyDemandDays(weekStart: string): WeeklyDemandDay[] {
     const days: WeeklyDemandDay[] = [];
 
@@ -431,5 +559,13 @@ export class DashboardComponent implements OnInit {
     const day = String(date.getDate()).padStart(2, '0');
 
     return `${year}-${month}-${day}`;
+  }
+
+  private timeFromDateTime(value: string): string {
+    if (value.length < 16) {
+      return value;
+    }
+
+    return value.slice(11, 16);
   }
 }
