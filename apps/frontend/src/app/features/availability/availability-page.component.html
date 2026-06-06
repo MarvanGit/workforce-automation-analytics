@@ -1,0 +1,82 @@
+<section class="feature-page">
+  <div class="feature-header">
+    <div>
+      <p class="feature-eyebrow">Coverage</p>
+      <h2 class="feature-title">Availability</h2>
+    </div>
+
+    <div class="feature-actions">
+      <label class="feature-label">
+        Week
+        <input class="feature-input" type="date" [(ngModel)]="weekStart" />
+      </label>
+      <button
+        type="button"
+        class="feature-button"
+        (click)="loadAvailability()"
+        [disabled]="isLoading || weekStart === ''"
+      >
+        Load
+      </button>
+    </div>
+  </div>
+
+  <span class="feature-status" [class.error]="errorMessage">
+    {{ errorMessage || message }}
+  </span>
+
+  <div class="feature-grid">
+    <article class="feature-card">
+      <p class="feature-card-label">Available</p>
+      <p class="feature-card-value">{{ availableTotal }}</p>
+      <p class="feature-card-note">Employee day count</p>
+    </article>
+
+    <article class="feature-card">
+      <p class="feature-card-label">Unavailable</p>
+      <p class="feature-card-value">{{ unavailableTotal }}</p>
+      <p class="feature-card-note">Employee day count</p>
+    </article>
+
+    <article class="feature-card">
+      <p class="feature-card-label">Hours</p>
+      <p class="feature-card-value">{{ availableHours }}</p>
+      <p class="feature-card-note">Available hours</p>
+    </article>
+  </div>
+
+  <section class="feature-panel">
+    <div class="feature-panel-header">
+      <div>
+        <h3>Weekly Availability</h3>
+        <p>{{ weekStart }}</p>
+      </div>
+    </div>
+
+    <div class="feature-table-wrap">
+      <table class="feature-table">
+        <thead>
+          <tr>
+            <th>Day</th>
+            <th>Date</th>
+            <th>Available</th>
+            <th>Unavailable</th>
+            <th>Hours</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let day of days">
+            <td>{{ day.weekday }}</td>
+            <td>{{ day.work_date }}</td>
+            <td>{{ day.available_employee_count }}</td>
+            <td>{{ day.unavailable_employee_count }}</td>
+            <td>{{ day.available_hours }}</td>
+          </tr>
+          <tr *ngIf="days.length === 0">
+            <td colspan="5">No availability records found.</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+</section>

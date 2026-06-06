@@ -1,0 +1,248 @@
+<section class="feature-page">
+  <div class="feature-header">
+    <div>
+      <p class="feature-eyebrow">Planning</p>
+      <h2 class="feature-title">Scheduling</h2>
+    </div>
+
+    <div class="feature-actions">
+      <label class="feature-label">
+        Week
+        <input
+          class="feature-input"
+          type="date"
+          [ngModel]="weekStart"
+          (ngModelChange)="changeWeekStart($event)"
+        />
+      </label>
+      <button
+        type="button"
+        class="feature-button secondary"
+        (click)="refreshPage()"
+        [disabled]="isLoading || weekStart === ''"
+      >
+        Refresh
+      </button>
+    </div>
+  </div>
+
+  <span class="feature-status" [class.error]="errorMessage">
+    {{ errorMessage || message }}
+  </span>
+
+  <div class="feature-workspace">
+    <section class="feature-panel">
+      <div class="feature-panel-header">
+        <div>
+          <h3>Shift Setup</h3>
+          <p>{{ shiftTemplates.length }} templates</p>
+        </div>
+      </div>
+
+      <form class="feature-form" (ngSubmit)="createShiftTemplate()">
+        <label class="feature-label">
+          Template
+          <input class="feature-input" type="text" name="shiftName" [(ngModel)]="shiftName" />
+        </label>
+        <label class="feature-label">
+          Start
+          <input class="feature-input" type="time" name="shiftStart" [(ngModel)]="shiftStart" />
+        </label>
+        <label class="feature-label">
+          End
+          <input class="feature-input" type="time" name="shiftEnd" [(ngModel)]="shiftEnd" />
+        </label>
+        <button
+          type="submit"
+          class="feature-button secondary"
+          [disabled]="!canCreateTemplate"
+        >
+          Create
+        </button>
+      </form>
+    </section>
+
+    <section class="feature-panel">
+      <div class="feature-panel-header">
+        <div>
+          <h3>Demand</h3>
+          <p>{{ shiftDemand.length }} rows</p>
+        </div>
+      </div>
+
+      <form class="feature-form" (ngSubmit)="createShiftDemand()">
+        <label class="feature-label">
+          Template
+          <select
+            class="feature-select"
+            name="selectedTemplateId"
+            [(ngModel)]="selectedTemplateId"
+          >
+            <option value="">Choose template</option>
+            <option *ngFor="let template of shiftTemplates" [value]="template.id">
+              {{ template.name }} {{ template.start_time }}-{{ template.end_time }}
+            </option>
+          </select>
+        </label>
+        <label class="feature-label">
+          Day
+          <select
+            class="feature-select"
+            name="selectedDemandDate"
+            [(ngModel)]="selectedDemandDate"
+          >
+            <option *ngFor="let day of weekDays" [value]="day.date">
+              {{ day.name }} - {{ day.date }}
+            </option>
+          </select>
+        </label>
+        <label class="feature-label">
+          Needed
+          <input
+            class="feature-input"
+            type="number"
+            min="1"
+            name="requiredEmployeeCount"
+            [(ngModel)]="requiredEmployeeCount"
+          />
+        </label>
+        <button type="submit" class="feature-button" [disabled]="!canCreateDemand">
+          Add Demand
+        </button>
+      </form>
+    </section>
+  </div>
+
+  <section class="feature-panel">
+    <div class="feature-panel-header">
+      <div>
+        <h3>Shift Demand</h3>
+        <p>{{ weekStart }}</p>
+      </div>
+    </div>
+
+    <div class="feature-table-wrap">
+      <table class="feature-table">
+        <thead>
+          <tr>
+            <th>Day</th>
+            <th>Date</th>
+            <th>Shift</th>
+            <th>Need</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let demand of shiftDemand">
+            <td>{{ demand.weekday }}</td>
+            <td>{{ demand.demand_date }}</td>
+            <td>{{ demand.shift_template_name }}</td>
+            <td>{{ demand.required_employee_count }}</td>
+            <td class="feature-table-action">
+              <button
+                type="button"
+                class="feature-link-button"
+                (click)="deleteShiftDemand(demand)"
+                [disabled]="isLoading"
+              >
+                Remove
+              </button>
+            </td>
+          </tr>
+          <tr *ngIf="shiftDemand.length === 0">
+            <td colspan="5">No demand rows found.</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section class="feature-panel">
+    <div class="feature-panel-header">
+      <div>
+        <h3>Schedule Preview</h3>
+        <p>{{ schedulePreview?.assignment_count || 0 }} assignments</p>
+      </div>
+
+      <div class="feature-actions">
+        <button
+          type="button"
+          class="feature-button secondary"
+          (click)="previewSchedule()"
+          [disabled]="!canPreviewSchedule"
+        >
+          Preview
+        </button>
+        <button
+          type="button"
+          class="feature-button"
+          (click)="saveScheduleRun()"
+          [disabled]="!canSaveScheduleRun"
+        >
+          Save
+        </button>
+      </div>
+    </div>
+
+    <div class="feature-board" *ngIf="schedulePreview">
+      <article class="feature-board-day" *ngFor="let day of previewBoardDays">
+        <h4>{{ day.name }}</h4>
+        <span>{{ day.date }}</span>
+
+        <div class="feature-board-shifts">
+          <div class="feature-shift-card" *ngFor="let shift of day.shifts">
+            <p>{{ shift.shift_template_name }}</p>
+            <span>{{ shift.shift_start_time }}-{{ shift.shift_end_time }}</span>
+
+            <div class="feature-chip-list">
+              <span *ngFor="let employee of shift.assigned_employees">
+                {{ employee.employee_code }}
+              </span>
+              <span class="missing" *ngIf="shift.missing_employee_count > 0">
+                Missing {{ shift.missing_employee_count }}
+              </span>
+            </div>
+          </div>
+
+          <p class="feature-empty" *ngIf="day.shifts.length === 0">No shifts</p>
+        </div>
+      </article>
+    </div>
+
+    <p class="feature-empty" *ngIf="!schedulePreview">No preview loaded.</p>
+  </section>
+
+  <section class="feature-panel">
+    <div class="feature-panel-header">
+      <div>
+        <h3>Saved Runs</h3>
+        <p>{{ scheduleRuns.length }} stored</p>
+      </div>
+    </div>
+
+    <div class="feature-workspace">
+      <div class="feature-list">
+        <button
+          type="button"
+          class="feature-row feature-button secondary"
+          *ngFor="let run of scheduleRuns"
+          (click)="openScheduleRun(run.id)"
+        >
+          <span>{{ run.start_date }}</span>
+          <strong>{{ run.status }}</strong>
+        </button>
+        <p class="feature-empty" *ngIf="scheduleRuns.length === 0">No saved runs.</p>
+      </div>
+
+      <div class="feature-list" *ngIf="selectedRun">
+        <article class="feature-row" *ngFor="let shift of selectedRun.scheduled_shifts">
+          <div>
+            <p>{{ shift.employee_code }} - {{ shift.shift_template_name }}</p>
+            <span>{{ shift.shift_date }}</span>
+          </div>
+          <strong>{{ shift.start_datetime | date: 'HH:mm' }}</strong>
+        </article>
+      </div>
+    </div>
+  </section>
+</section>

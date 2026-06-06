@@ -1,6 +1,10 @@
 import { Routes } from '@angular/router';
 
+import { AnalyticsPageComponent } from './features/analytics/analytics-page.component';
+import { AvailabilityPageComponent } from './features/availability/availability-page.component';
 import { DashboardComponent } from './features/dashboard/dashboard.component';
+import { ImportsPageComponent } from './features/imports/imports-page.component';
+import { SchedulingPageComponent } from './features/scheduling/scheduling-page.component';
 
 export const routes: Routes = [
   {
@@ -9,23 +13,22 @@ export const routes: Routes = [
   },
   {
     path: 'imports',
-    component: DashboardComponent
+    component: ImportsPageComponent
   },
   {
     path: 'availability',
-    component: DashboardComponent
+    component: AvailabilityPageComponent
   },
   {
     path: 'scheduling',
-    component: DashboardComponent
+    component: SchedulingPageComponent
   },
   {
     path: 'analytics',
-    component: DashboardComponent
+    component: AnalyticsPageComponent
   },
   {
     path: '**',
     redirectTo: ''
   }
 ];
-
