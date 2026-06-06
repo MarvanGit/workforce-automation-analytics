@@ -164,6 +164,10 @@ export class SchedulingApiService {
     });
   }
 
+  async deleteShiftDemand(demandId: string): Promise<void> {
+    await this.delete(`/shift-demand/${demandId}`);
+  }
+
   async importAvailability(weekStart: string): Promise<void> {
     await this.post(`/google-sheets/availability/import?week_start=${weekStart}`, {});
   }
@@ -196,5 +200,9 @@ export class SchedulingApiService {
 
   private async post<T>(path: string, body: object): Promise<T> {
     return firstValueFrom(this.http.post<T>(`${API_BASE_URL}${path}`, body));
+  }
+
+  private async delete(path: string): Promise<void> {
+    await firstValueFrom(this.http.delete<void>(`${API_BASE_URL}${path}`));
   }
 }
