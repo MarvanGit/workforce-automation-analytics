@@ -14,6 +14,13 @@ import {
   ShiftTemplateResponse
 } from '../../core/api/scheduling-api.service';
 
+interface WeeklyDemandDay {
+  name: string;
+  date: string;
+  enabled: boolean;
+  requiredEmployeeCount: number;
+}
+
 @Component({
   selector: 'app-dashboard',
   standalone: true,
@@ -23,13 +30,21 @@ import {
 })
 export class DashboardComponent implements OnInit {
   private readonly schedulingApi = inject(SchedulingApiService);
+  private readonly weekdayNames = [
+    'Monday',
+    'Tuesday',
+    'Wednesday',
+    'Thursday',
+    'Friday',
+    'Saturday'
+  ];
 
   weekStart = '2026-06-08';
   shiftName = 'Morning';
   shiftStart = '09:00';
   shiftEnd = '17:00';
-  requiredEmployeeCount = 1;
   selectedTemplateId = '';
+  weeklyDemandDays = this.buildWeeklyDemandDays(this.weekStart);
 
   employees: EmployeeResponse[] = [];
   availabilityDays: AvailabilityDaySummary[] = [];
@@ -79,12 +94,12 @@ export class DashboardComponent implements OnInit {
     );
   }
 
-  get canCreateDemand(): boolean {
+  get canCreateWeeklyDemand(): boolean {
     return (
       !this.isLoading &&
       this.weekStart !== '' &&
       this.selectedTemplateId !== '' &&
-      this.requiredEmployeeCount > 0
+      this.hasSelectedDemandDay()
     );
   }
 
@@ -136,12 +151,16 @@ export class DashboardComponent implements OnInit {
   }
 
   async createShiftDemand(): Promise<void> {
-    await this.runAction('creating shift demand', 'Shift demand created', async () => {
-      await this.schedulingApi.createShiftDemand(
-        this.weekStart,
-        this.selectedTemplateId,
-        this.requiredEmployeeCount
-      );
+    await this.runAction('creating weekly demand', 'Weekly demand created', async () => {
+      for (const day of this.weeklyDemandDays) {
+        if (day.enabled && day.requiredEmployeeCount > 0) {
+          await this.schedulingApi.createShiftDemand(
+            day.date,
+            this.selectedTemplateId,
+            day.requiredEmployeeCount
+          );
+        }
+      }
 
       await this.loadShiftDemand();
     });
@@ -170,6 +189,13 @@ export class DashboardComponent implements OnInit {
     this.shiftName = shift.name;
     this.shiftStart = shift.start;
     this.shiftEnd = shift.end;
+  }
+
+  changeWeekStart(value: string): void {
+    this.weekStart = value;
+    this.weeklyDemandDays = this.buildWeeklyDemandDays(value);
+    this.schedulePreview = null;
+    this.selectedRun = null;
   }
 
   private async loadAvailabilitySummary(): Promise<void> {
@@ -254,5 +280,54 @@ export class DashboardComponent implements OnInit {
       'message' in value &&
       typeof value.message === 'string'
     );
+  }
+
+  private hasSelectedDemandDay(): boolean {
+    for (const day of this.weeklyDemandDays) {
+      if (day.enabled && day.requiredEmployeeCount > 0) {
+        return true;
+      }
+    }
+
+    return false;
+  }
+
+  private buildWeeklyDemandDays(weekStart: string): WeeklyDemandDay[] {
+    const days: WeeklyDemandDay[] = [];
+
+    if (weekStart === '') {
+      return days;
+    }
+
+    for (let index = 0; index < this.weekdayNames.length; index++) {
+      days.push({
+        name: this.weekdayNames[index],
+        date: this.addDays(weekStart, index),
+        enabled: true,
+        requiredEmployeeCount: 1
+      });
+    }
+
+    return days;
+  }
+
+  private addDays(dateText: string, daysToAdd: number): string {
+    const parts = dateText.split('-');
+    const year = Number(parts[0]);
+    const month = Number(parts[1]) - 1;
+    const day = Number(parts[2]);
+    const date = new Date(year, month, day);
+
+    date.setDate(date.getDate() + daysToAdd);
+
+    return this.dateText(date);
+  }
+
+  private dateText(date: Date): string {
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+
+    return `${year}-${month}-${day}`;
   }
 }
