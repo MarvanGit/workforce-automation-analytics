@@ -1,14 +1,15 @@
-<section class="dashboard">
-  <div class="page-header">
+<section class="feature-page">
+  <div class="feature-header">
     <div>
-      <p class="eyebrow">Scheduling Workspace</p>
-      <h2>Weekly workforce control</h2>
+      <p class="feature-eyebrow">Overview</p>
+      <h2 class="feature-title">Weekly workforce control</h2>
     </div>
 
-    <div class="week-controls">
-      <label>
+    <div class="feature-actions">
+      <label class="feature-label">
         Week
         <input
+          class="feature-input"
           type="date"
           [ngModel]="weekStart"
           (ngModelChange)="changeWeekStart($event)"
@@ -16,316 +17,164 @@
       </label>
       <button
         type="button"
-        class="button secondary"
+        class="feature-button secondary"
         (click)="refreshDashboard()"
-        [disabled]="!canImportAvailability"
+        [disabled]="isLoading || weekStart === ''"
       >
-        {{ isLoading ? 'Loading' : 'Refresh' }}
-      </button>
-      <button
-        type="button"
-        class="button"
-        (click)="importAvailability()"
-        [disabled]="!canImportAvailability"
-      >
-        {{ isLoading ? 'Working' : 'Import' }}
+        {{ refreshButtonText }}
       </button>
     </div>
   </div>
 
-  <div class="status-row" *ngIf="statusText">
-    <span
-      class="status-pill"
-      [class.error]="errorMessage"
-      [class.loading]="isLoading"
-    >
-      {{ statusText }}
+  <span class="feature-status" [class.error]="errorMessage">
+    {{ statusText }}
+  </span>
+
+  <div class="feature-grid">
+    <article class="feature-card">
+      <p class="feature-card-label">Employees</p>
+      <p class="feature-card-value">{{ employees.length }}</p>
+      <p class="feature-card-note">Stored records</p>
+    </article>
+
+    <article class="feature-card">
+      <p class="feature-card-label">Availability</p>
+      <p class="feature-card-value">{{ availableEmployeeTotal }}</p>
+      <p class="feature-card-note">Available employee days</p>
+    </article>
+
+    <article class="feature-card">
+      <p class="feature-card-label">Demand</p>
+      <p class="feature-card-value">{{ demandEmployeeTotal }}</p>
+      <p class="feature-card-note">{{ shiftDemand.length }} shift rows</p>
+    </article>
+
+    <article class="feature-card">
+      <p class="feature-card-label">Saved Runs</p>
+      <p class="feature-card-value">{{ scheduleRuns.length }}</p>
+      <p class="feature-card-note">Stored schedules</p>
+    </article>
+  </div>
+
+  <div class="overview-status-grid">
+    <span class="overview-step" [class.ready]="backendOnline">
+      Backend
+      <small>{{ backendStatus }}</small>
     </span>
-    <span class="status-pill connection" [class.error]="!backendOnline">
-      {{ backendStatus }}
+    <span class="overview-step" [class.ready]="hasAvailabilityData">
+      Availability
+      <small>{{ hasAvailabilityData ? 'Loaded' : 'Missing' }}</small>
+    </span>
+    <span class="overview-step" [class.ready]="hasShiftDemand">
+      Demand
+      <small>{{ hasShiftDemand ? 'Ready' : 'Missing' }}</small>
+    </span>
+    <span class="overview-step" [class.ready]="hasSavedRuns">
+      Saved Runs
+      <small>{{ hasSavedRuns ? 'Available' : 'None' }}</small>
     </span>
   </div>
 
-  <div class="metric-grid">
-    <article class="metric-card">
-      <p class="metric-label">Employees</p>
-      <p class="metric-value">{{ employees.length }}</p>
-      <p class="metric-note">Active records</p>
-    </article>
+  <section class="feature-panel">
+    <div class="feature-panel-header">
+      <div>
+        <h3>Workspace Areas</h3>
+        <p>{{ weekStart }}</p>
+      </div>
+    </div>
 
-    <article class="metric-card">
-      <p class="metric-label">Availability</p>
-      <p class="metric-value">{{ totalAvailableEmployees }}</p>
-      <p class="metric-note">Daily available count</p>
-    </article>
+    <div class="overview-links">
+      <a class="overview-link-card" routerLink="/imports">
+        <span>Imports</span>
+        <strong>Sheet sync</strong>
+      </a>
+      <a class="overview-link-card" routerLink="/availability">
+        <span>Availability</span>
+        <strong>Weekly coverage</strong>
+      </a>
+      <a class="overview-link-card" routerLink="/scheduling">
+        <span>Scheduling</span>
+        <strong>Demand and runs</strong>
+      </a>
+      <a class="overview-link-card" routerLink="/analytics">
+        <span>Analytics</span>
+        <strong>Metrics</strong>
+      </a>
+    </div>
+  </section>
 
-    <article class="metric-card">
-      <p class="metric-label">Demand</p>
-      <p class="metric-value">{{ shiftDemand.length }}</p>
-      <p class="metric-note">Shift rows this week</p>
-    </article>
-
-    <article class="metric-card">
-      <p class="metric-label">Warnings</p>
-      <p class="metric-value">{{ warningCount }}</p>
-      <p class="metric-note">Latest preview</p>
-    </article>
-  </div>
-
-  <div class="workflow-strip">
-    <span [class.ready]="hasAvailabilityData">Availability</span>
-    <span [class.ready]="hasShiftDemand">Demand</span>
-    <span [class.ready]="hasSchedulePreview">Preview</span>
-    <span [class.ready]="scheduleRuns.length > 0">Saved Runs</span>
-  </div>
-
-  <div class="workspace-grid">
-    <section class="panel planner-panel">
-      <div class="panel-header">
+  <div class="feature-workspace">
+    <section class="feature-panel">
+      <div class="feature-panel-header">
         <div>
-          <h3>Shift Demand</h3>
-          <p>{{ shiftTemplates.length }} templates available</p>
-        </div>
-      </div>
-
-      <div class="quick-shifts">
-        <button
-          type="button"
-          class="chip"
-          *ngFor="let shift of quickShifts"
-          (click)="useQuickShift(shift)"
-        >
-          {{ shift.name }} {{ shift.start }}-{{ shift.end }}
-        </button>
-      </div>
-
-      <form class="form-grid" (ngSubmit)="createShiftTemplate()">
-        <label>
-          Template
-          <input type="text" name="shiftName" [(ngModel)]="shiftName" />
-        </label>
-        <label>
-          Start
-          <input type="time" name="shiftStart" [(ngModel)]="shiftStart" />
-        </label>
-        <label>
-          End
-          <input type="time" name="shiftEnd" [(ngModel)]="shiftEnd" />
-        </label>
-        <button type="submit" class="button secondary" [disabled]="!canCreateTemplate">
-          Create Template
-        </button>
-      </form>
-
-      <form class="demand-form" (ngSubmit)="createShiftDemand()">
-        <label>
-          Template
-          <select name="selectedTemplateId" [(ngModel)]="selectedTemplateId">
-            <option value="">Choose template</option>
-            <option *ngFor="let template of shiftTemplates" [value]="template.id">
-              {{ template.name }} {{ template.start_time }}-{{ template.end_time }}
-            </option>
-          </select>
-        </label>
-
-        <label>
-          Day
-          <select name="selectedDemandDate" [(ngModel)]="selectedDemandDate">
-            <option value="">Choose day</option>
-            <option *ngFor="let day of weeklyDemandDays" [value]="day.date">
-              {{ day.name }} - {{ day.date }}
-              {{ demandExistsForDate(day.date) ? '(exists)' : '' }}
-            </option>
-          </select>
-        </label>
-
-        <label>
-          Needed
-          <input
-            type="number"
-            min="1"
-            name="requiredEmployeeCount"
-            [(ngModel)]="requiredEmployeeCount"
-          />
-        </label>
-
-        <button type="submit" class="button" [disabled]="!canCreateWeeklyDemand">
-          {{ demandButtonText }}
-        </button>
-      </form>
-
-      <div class="table-wrap">
-        <table>
-          <thead>
-            <tr>
-              <th>Day</th>
-              <th>Date</th>
-              <th>Shift</th>
-              <th>Need</th>
-              <th></th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr *ngFor="let demand of shiftDemand">
-              <td>{{ demand.weekday }}</td>
-              <td>{{ demand.demand_date }}</td>
-              <td>{{ demand.shift_template_name }}</td>
-              <td>{{ demand.required_employee_count }}</td>
-              <td class="table-action">
-                <button
-                  type="button"
-                  class="link-button danger"
-                  (click)="deleteShiftDemand(demand)"
-                  [disabled]="isLoading"
-                >
-                  Remove
-                </button>
-              </td>
-            </tr>
-            <tr *ngIf="shiftDemand.length === 0">
-              <td colspan="5">No demand for this week.</td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-    </section>
-
-    <section class="panel">
-      <div class="panel-header">
-        <div>
-          <h3>Availability</h3>
+          <h3>Availability Snapshot</h3>
           <p>Monday to Saturday</p>
         </div>
       </div>
 
-      <div class="availability-list">
-        <div class="day-row" *ngFor="let day of availabilityDays">
+      <div class="feature-list">
+        <article class="feature-row" *ngFor="let day of availabilityDays">
           <div>
             <p>{{ day.weekday }}</p>
             <span>{{ day.work_date }}</span>
           </div>
           <strong>{{ day.available_employee_count }}</strong>
-        </div>
-        <p class="empty-state" *ngIf="availabilityDays.length === 0">
+        </article>
+
+        <p class="feature-empty" *ngIf="availabilityDays.length === 0">
           No availability loaded for this week.
         </p>
       </div>
     </section>
-  </div>
 
-  <div class="workspace-grid">
-    <section class="panel schedule-panel">
-      <div class="panel-header">
+    <section class="feature-panel">
+      <div class="feature-panel-header">
         <div>
-          <h3>Schedule Preview</h3>
-          <p>{{ schedulePreview?.assignment_count || 0 }} assignments</p>
-        </div>
-        <div class="button-group">
-          <button
-            type="button"
-            class="button secondary"
-            (click)="previewSchedule()"
-            [disabled]="!canPreviewSchedule"
-          >
-            {{ previewButtonText }}
-          </button>
-          <button
-            type="button"
-            class="button"
-            (click)="saveScheduleRun()"
-            [disabled]="!canSaveScheduleRun"
-          >
-            {{ saveButtonText }}
-          </button>
+          <h3>Demand Snapshot</h3>
+          <p>{{ shiftTemplates.length }} templates</p>
         </div>
       </div>
 
-      <div class="warning-list" *ngIf="schedulePreview?.warnings?.length">
-        <p *ngFor="let warning of schedulePreview?.warnings">{{ warning }}</p>
-      </div>
-
-      <div class="schedule-board" *ngIf="schedulePreview">
-        <article class="board-day" *ngFor="let day of previewBoardDays">
-          <div class="board-day-header">
-            <h4>{{ day.name }}</h4>
-            <span>{{ day.date }}</span>
-          </div>
-
-          <div class="board-shifts">
-            <div class="board-shift" *ngFor="let shift of day.shifts">
-              <p>{{ shift.shift_template_name }}</p>
-              <span>{{ shift.shift_start_time }}-{{ shift.shift_end_time }}</span>
-
-              <div class="assigned-list">
-                <span *ngFor="let employee of shift.assigned_employees">
-                  {{ employee.employee_code }}
-                </span>
-                <span class="missing" *ngIf="shift.missing_employee_count > 0">
-                  Missing {{ shift.missing_employee_count }}
-                </span>
-              </div>
-            </div>
-
-            <p class="board-empty" *ngIf="day.shifts.length === 0">No shifts</p>
-          </div>
-        </article>
-      </div>
-      <p class="empty-state" *ngIf="!schedulePreview">No preview loaded.</p>
-      <p class="empty-state" *ngIf="schedulePreview && schedulePreview.shifts.length === 0">
-        No shifts found for this preview.
-      </p>
-    </section>
-
-    <section class="panel">
-      <div class="panel-header">
-        <div>
-          <h3>Saved Runs</h3>
-          <p>{{ scheduleRuns.length }} stored</p>
-        </div>
-      </div>
-
-      <div class="run-list">
-        <button
-          type="button"
-          class="run-row"
-          *ngFor="let run of scheduleRuns"
-          [class.active]="selectedRun?.id === run.id"
-          (click)="openScheduleRun(run.id)"
-        >
-          <span>{{ run.start_date }}</span>
-          <strong>{{ run.status }}</strong>
-        </button>
-        <p class="empty-state" *ngIf="scheduleRuns.length === 0">No saved runs.</p>
-      </div>
-
-      <div class="selected-run" *ngIf="selectedRun">
-        <h4>{{ selectedRun.start_date }} to {{ selectedRun.end_date }}</h4>
-        <p>{{ selectedRun.scheduled_shift_count }} saved shifts</p>
-
-        <div class="schedule-board saved-board">
-          <article class="board-day" *ngFor="let day of savedRunBoardDays">
-            <div class="board-day-header">
-              <h4>{{ day.name }}</h4>
-              <span>{{ day.date }}</span>
-            </div>
-
-            <div class="board-shifts">
-              <div class="board-shift" *ngFor="let shift of day.shifts">
-                <p>{{ shift.shiftTemplateName }}</p>
-                <span>{{ savedShiftTime(shift) }}</span>
-
-                <div class="assigned-list">
-                  <span *ngFor="let employeeCode of shift.employeeCodes">
-                    {{ employeeCode }}
-                  </span>
-                </div>
-              </div>
-
-              <p class="board-empty" *ngIf="day.shifts.length === 0">No shifts</p>
-            </div>
-          </article>
-        </div>
+      <div class="feature-table-wrap">
+        <table class="feature-table">
+          <thead>
+            <tr>
+              <th>Day</th>
+              <th>Shift</th>
+              <th>Need</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let demand of shiftDemand">
+              <td>{{ demand.weekday }}</td>
+              <td>{{ demand.shift_template_name }}</td>
+              <td>{{ demand.required_employee_count }}</td>
+            </tr>
+            <tr *ngIf="shiftDemand.length === 0">
+              <td colspan="3">No demand rows found.</td>
+            </tr>
+          </tbody>
+        </table>
       </div>
     </section>
   </div>
+
+  <section class="feature-panel">
+    <div class="feature-panel-header">
+      <div>
+        <h3>Latest Saved Run</h3>
+        <p>{{ scheduleRuns.length }} stored</p>
+      </div>
+    </div>
+
+    <article class="feature-row" *ngIf="latestRun">
+      <div>
+        <p>{{ latestRun.start_date }} to {{ latestRun.end_date }}</p>
+        <span>{{ latestRun.id }}</span>
+      </div>
+      <strong>{{ latestRun.status }}</strong>
+    </article>
+
+    <p class="feature-empty" *ngIf="!latestRun">No saved runs yet.</p>
+  </section>
 </section>
